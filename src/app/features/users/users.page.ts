@@ -151,7 +151,7 @@ type DialogMode = 'create' | 'edit';
         </div>
       }
 
-      <hlm-dialog [state]="dialogState()">
+      <hlm-dialog [state]="dialogState()" (stateChanged)="onDialogStateChanged($event)">
         <ng-template brnDialogContent>
           <hlm-dialog-content>
             <hlm-dialog-header>
@@ -331,6 +331,7 @@ export class UsersPage implements OnInit {
     this.dialogMode.set('create');
     this.editingUser.set(null);
     this.resetForm();
+    this.dialogState.set('closed');
     this.dialogState.set('open');
   }
 
@@ -344,12 +345,19 @@ export class UsersPage implements OnInit {
     this.formRoles = [...user.roles];
     this.formIsActive = user.is_active;
     this.formMustChangePassword = user.must_change_password;
+    this.dialogState.set('closed');
     this.dialogState.set('open');
+  }
+
+  onDialogStateChanged(state: 'open' | 'closed') {
+    this.dialogState.set(state);
+    if (state === 'closed') {
+      this.editingUser.set(null);
+    }
   }
 
   closeDialog() {
     this.dialogState.set('closed');
-    this.editingUser.set(null);
   }
 
   toggleRole(role: AppRole) {

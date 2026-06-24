@@ -151,7 +151,7 @@ type DialogMode = 'create' | 'edit';
         </div>
       }
 
-      <hlm-dialog [state]="dialogState()">
+      <hlm-dialog [state]="dialogState()" (stateChanged)="onDialogStateChanged($event)">
         <ng-template brnDialogContent>
           <hlm-dialog-content>
             <hlm-dialog-header>
@@ -251,6 +251,7 @@ export class OrganizationsPage implements OnInit {
     this.dialogMode.set('create');
     this.editingOrganization.set(null);
     this.resetForm();
+    this.dialogState.set('closed');
     this.dialogState.set('open');
   }
 
@@ -260,12 +261,19 @@ export class OrganizationsPage implements OnInit {
     this.formName = organization.name;
     this.formSlug = organization.slug;
     this.formIsActive = organization.is_active;
+    this.dialogState.set('closed');
     this.dialogState.set('open');
+  }
+
+  onDialogStateChanged(state: 'open' | 'closed') {
+    this.dialogState.set(state);
+    if (state === 'closed') {
+      this.editingOrganization.set(null);
+    }
   }
 
   closeDialog() {
     this.dialogState.set('closed');
-    this.editingOrganization.set(null);
   }
 
   resetForm() {

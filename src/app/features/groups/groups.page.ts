@@ -149,7 +149,7 @@ type DialogMode = 'create' | 'edit';
         </div>
       }
 
-      <hlm-dialog [state]="dialogState()">
+      <hlm-dialog [state]="dialogState()" (stateChanged)="onDialogStateChanged($event)">
         <ng-template brnDialogContent>
           <hlm-dialog-content>
             <hlm-dialog-header>
@@ -287,6 +287,7 @@ export class GroupsPage implements OnInit {
     this.editingGroup.set(null);
     this.resetForm();
     await this.loadMembersForForm();
+    this.dialogState.set('closed');
     this.dialogState.set('open');
   }
 
@@ -297,12 +298,19 @@ export class GroupsPage implements OnInit {
     this.formDescription = group.description ?? '';
     this.formMemberUids = [...group.member_uids];
     await this.loadMembersForForm();
+    this.dialogState.set('closed');
     this.dialogState.set('open');
+  }
+
+  onDialogStateChanged(state: 'open' | 'closed') {
+    this.dialogState.set(state);
+    if (state === 'closed') {
+      this.editingGroup.set(null);
+    }
   }
 
   closeDialog() {
     this.dialogState.set('closed');
-    this.editingGroup.set(null);
   }
 
   resetForm() {
