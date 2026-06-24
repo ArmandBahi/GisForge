@@ -456,6 +456,10 @@ export type Database = {
         Args: { p_display_name: string }
         Returns: undefined
       }
+      update_user_roles: {
+        Args: { p_role_names: string[]; p_uid: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

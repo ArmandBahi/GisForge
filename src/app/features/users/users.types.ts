@@ -5,6 +5,7 @@ export interface ManagedUser {
   email: string;
   display_name: string | null;
   organization_id: string | null;
+  organization_name: string | null;
   is_active: boolean;
   must_change_password: boolean;
   created_at: string;

@@ -1,0 +1,34 @@
+---
+description: GisForge core stack, structure, and forbidden patterns
+alwaysApply: true
+---
+
+# GisForge Core
+
+Angular 19 standalone + Spartan UI + Tailwind v4 + Supabase + signals.
+
+## Golden rule
+
+1 feature = 1 folder in `features/` = 1 lazy route = 1 data service.
+
+## Structure
+
+- `core/` — auth, layout, supabase (singletons, no business UI)
+- `shared/ui/` — Spartan Helm components only
+- `features/<name>/` — page, service, routes, types
+
+## Naming
+
+`<feature>.page.ts`, `<feature>.service.ts`, `<feature>.routes.ts`, `<feature>.types.ts`
+
+## Forbidden
+
+- NgModules
+- Supabase calls in components (use services)
+- Static imports of all pages in app.routes
+- Manual edits to `database.types.ts`
+- `confirm()` for delete — use hlm-dialog
+
+## Reference
+
+Full rules in `AGENTS.md`. CRUD pattern: `features/users`.

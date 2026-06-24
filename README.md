@@ -42,14 +42,28 @@ Connexion : [http://localhost:4200/login](http://localhost:4200/login)
 
 L'inscription publique est désactivée (`enable_signup = false`). Les admins créent les comptes via `/users` (RPC `create_user`).
 
+## Supabase CLI (local)
+
+Commandes à lancer depuis la racine du projet (Docker requis).
+
+| Commande | Description |
+|----------|-------------|
+| `npx supabase start` | Démarre Supabase en local (Postgres, Auth, Studio…) |
+| `npx supabase stop` | Arrête les conteneurs Docker Supabase |
+| `npx supabase status` | Affiche URLs, ports et clés API du stack local |
+| `npx supabase db reset` | Réinitialise la DB : migrations + seed (org `default` + admin) |
+| `npx supabase migration up` | Applique uniquement les migrations en attente (sans reset) |
+| `npm run gen:types` | Génère `src/app/core/supabase/database.types.ts` depuis la DB locale |
+
+Studio local : [http://localhost:54323](http://localhost:54323) (après `start`).
+
 ## Scripts utiles
 
 | Commande | Description |
 |----------|-------------|
 | `npm start` | Dev server Angular |
 | `npm run build` | Build production |
-| `npm run gen:types` | Génère `src/app/core/supabase/database.types.ts` |
-| `npm run gen:types:check` | Idem, avec vérif que Supabase tourne |
+| `npm run gen:types:check` | Génère les types Supabase, avec vérif que le stack local tourne |
 
 ## Configuration Supabase
 
@@ -59,7 +73,7 @@ Les valeurs de dev Angular sont dans `src/environments/environment.development.t
 ## Auth
 
 - `AuthService` (`core/auth/`) : session, profil, rôles (`super_admin`, `organization_admin`, `user`)
-- Guards : `authGuard`, `guestGuard`, `roleGuard`
+- Guards : `authGuard`, `guestGuard`, `roleGuard`, `passwordChangeChildGuard`
 - Routes protégées : layout + dashboard nécessitent une session active
 - Inscription publique désactivée (login uniquement)
 
@@ -83,6 +97,28 @@ Les valeurs de dev Angular sont dans `src/environments/environment.development.t
 - `GroupsService` + `groups.page.ts` : liste scoped à l'org, CRUD, affectation des membres
 - Sidebar : lien « Groupes » visible pour `super_admin` et `organization_admin`
 
+## AI-assisted development
+
+Ce boilerplate est conçu pour être forké et étendu avec des outils IA (Cursor, Claude Code).
+
+| Ressource | Description |
+|-----------|-------------|
+| [AGENTS.md](AGENTS.md) | Règles de génération (point d'entrée principal) |
+| [CLAUDE.md](CLAUDE.md) | Point d'entrée Claude Code |
+| [doc/ai/](doc/ai/README.md) | Documentation détaillée (CRUD, checklist, Supabase, UI) |
+| [doc/architecture/](doc/architecture/auth-and-multi-tenant.md) | Auth et multi-tenant |
+| [doc/bdd/](doc/bdd/README.md) | Documentation base de données |
+| `.cursor/rules/` | Règles Cursor (scopées par type de fichier) |
+
+Référence CRUD : `src/app/features/users/` (liste, filtres, dialogs, delete modal).
+
+Voir [CONTRIBUTING.md](CONTRIBUTING.md) pour contribuer.
+
 ## Structure
 
-Voir [.cursor/gis-forge.md](.cursor/gis-forge.md) pour les conventions IA.
+```
+src/app/
+├── core/       # auth, layout, supabase
+├── shared/ui/  # Spartan Helm
+└── features/   # 1 dossier = 1 domaine métier
+```

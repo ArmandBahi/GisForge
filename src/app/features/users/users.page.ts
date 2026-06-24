@@ -1,3 +1,4 @@
+// Reference implementation — see doc/ai/crud-pattern.md
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,6 +8,7 @@ import {
   LucideRefreshCw,
   LucideTrash2,
   LucideUsers,
+  LucideX,
 } from '@lucide/angular';
 import { BrnDialogContent } from '@spartan-ng/brain/dialog';
 import { toast } from 'ngx-sonner';
@@ -22,6 +24,7 @@ import type { ManagedUser } from './users.types';
 import { UsersService } from './users.service';
 
 type DialogMode = 'create' | 'edit';
+type UserStatusFilter = 'all' | 'active' | 'inactive';
 
 @Component({
   selector: 'app-users-page',
@@ -34,6 +37,7 @@ type DialogMode = 'create' | 'edit';
     LucideRefreshCw,
     LucideEdit,
     LucideTrash2,
+    LucideX,
     BrnDialogContent,
     HlmButtonImports,
     HlmDialogImports,
@@ -60,29 +64,97 @@ type DialogMode = 'create' | 'edit';
         </button>
       </div>
 
-      <div class="rounded-lg border bg-card p-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <input
-          hlmInput
-          type="search"
-          placeholder="Rechercher par nom ou email…"
-          [(ngModel)]="searchQuery"
-          name="search"
-          class="w-full sm:max-w-sm"
-        />
-        <button
-          hlmBtn
-          variant="outline"
-          type="button"
-          [disabled]="usersService.loading()"
-          (click)="refresh()"
-        >
-          <svg
-            lucideRefreshCw
-            class="size-4"
-            [class.animate-spin]="usersService.loading()"
-          ></svg>
-          Actualiser
-        </button>
+      <div class="rounded-lg border bg-card p-4 space-y-3">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end flex-1">
+            <div class="space-y-1 w-full sm:max-w-sm">
+              <label hlmLabel for="user-search" class="text-xs">Recherche</label>
+              <div class="relative">
+                <input
+                  hlmInput
+                  id="user-search"
+                  type="search"
+                  placeholder="Nom, email, organisation, rôle…"
+                  [ngModel]="searchQuery()"
+                  (ngModelChange)="searchQuery.set($event)"
+                  name="search"
+                  class="w-full pr-9"
+                />
+                @if (searchQuery()) {
+                  <button
+                    hlmBtn
+                    variant="ghost"
+                    size="icon-sm"
+                    type="button"
+                    class="absolute right-1 top-1/2 -translate-y-1/2"
+                    aria-label="Effacer la recherche"
+                    (click)="searchQuery.set('')"
+                  >
+                    <svg lucideX class="size-4"></svg>
+                  </button>
+                }
+              </div>
+            </div>
+
+            @if (authService.hasRole('super_admin')) {
+              <div class="space-y-1 w-full sm:w-48">
+                <label hlmLabel for="user-org-filter" class="text-xs">Organisation</label>
+                <select
+                  id="user-org-filter"
+                  [ngModel]="filterOrganizationId()"
+                  (ngModelChange)="filterOrganizationId.set($event)"
+                  name="filterOrganizationId"
+                  class="border-input bg-background flex h-9 w-full rounded-md border px-3 text-sm"
+                >
+                  <option value="">Toutes</option>
+                  @for (organization of usersService.organizations(); track organization.id) {
+                    <option [value]="organization.id">{{ organization.name }}</option>
+                  }
+                </select>
+              </div>
+            }
+
+            <div class="space-y-1 w-full sm:w-40">
+              <label hlmLabel for="user-status-filter" class="text-xs">Statut</label>
+              <select
+                id="user-status-filter"
+                [ngModel]="filterStatus()"
+                (ngModelChange)="onFilterStatusChange($event)"
+                name="filterStatus"
+                class="border-input bg-background flex h-9 w-full rounded-md border px-3 text-sm"
+              >
+                <option value="all">Tous</option>
+                <option value="active">Actifs</option>
+                <option value="inactive">Inactifs</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 sm:justify-end">
+            <span class="text-xs text-muted-foreground tabular-nums">
+              {{ filteredUsers().length }} / {{ usersService.users().length }}
+            </span>
+            @if (hasActiveFilters()) {
+              <button hlmBtn variant="ghost" size="sm" type="button" (click)="clearFilters()">
+                Réinitialiser
+              </button>
+            }
+            <button
+              hlmBtn
+              variant="outline"
+              type="button"
+              [disabled]="usersService.loading()"
+              (click)="refresh()"
+            >
+              <svg
+                lucideRefreshCw
+                class="size-4"
+                [class.animate-spin]="usersService.loading()"
+              ></svg>
+              Actualiser
+            </button>
+          </div>
+        </div>
       </div>
 
       @if (usersService.loading()) {
@@ -98,6 +170,9 @@ type DialogMode = 'create' | 'edit';
               <tr hlmTr>
                 <th hlmTh>Nom</th>
                 <th hlmTh>Email</th>
+                @if (authService.hasRole('super_admin')) {
+                  <th hlmTh>Organisation</th>
+                }
                 <th hlmTh>Statut</th>
                 <th hlmTh>Rôles</th>
                 <th hlmTh>Créé le</th>
@@ -109,6 +184,9 @@ type DialogMode = 'create' | 'edit';
                 <tr hlmTr>
                   <td hlmTd class="font-medium">{{ user.display_name || '—' }}</td>
                   <td hlmTd class="font-mono text-xs">{{ user.email }}</td>
+                  @if (authService.hasRole('super_admin')) {
+                    <td hlmTd>{{ user.organization_name || '—' }}</td>
+                  }
                   <td hlmTd>
                     @if (user.is_active) {
                       <span class="text-xs rounded-full bg-primary/10 text-primary px-2 py-0.5">Actif</span>
@@ -156,8 +234,16 @@ type DialogMode = 'create' | 'edit';
                 </tr>
               } @empty {
                 <tr hlmTr>
-                  <td hlmTd colspan="6" class="text-center py-8 text-muted-foreground">
-                    Aucun utilisateur trouvé.
+                  <td
+                    hlmTd
+                    [attr.colspan]="authService.hasRole('super_admin') ? 7 : 6"
+                    class="text-center py-8 text-muted-foreground"
+                  >
+                    @if (hasActiveFilters()) {
+                      Aucun utilisateur ne correspond aux filtres.
+                    } @else {
+                      Aucun utilisateur trouvé.
+                    }
                   </td>
                 </tr>
               }
@@ -333,7 +419,9 @@ export class UsersPage implements OnInit {
   readonly editingUser = signal<ManagedUser | null>(null);
   readonly deletingUser = signal<ManagedUser | null>(null);
 
-  searchQuery = '';
+  readonly searchQuery = signal('');
+  readonly filterOrganizationId = signal('');
+  readonly filterStatus = signal<UserStatusFilter>('all');
   formEmail = '';
   formPassword = '';
   formDisplayName = '';
@@ -347,18 +435,53 @@ export class UsersPage implements OnInit {
     return this.usersService.roles().filter((role) => assignable.includes(role.name));
   });
 
+  readonly hasActiveFilters = computed(
+    () =>
+      this.searchQuery().trim() !== '' ||
+      this.filterOrganizationId() !== '' ||
+      this.filterStatus() !== 'all',
+  );
+
   readonly filteredUsers = computed(() => {
-    const query = this.searchQuery.toLowerCase().trim();
-    const users = this.usersService.users();
+    const query = this.searchQuery().toLowerCase().trim();
+    const organizationId = this.filterOrganizationId();
+    const status = this.filterStatus();
+    let users = this.usersService.users();
+
+    if (organizationId) {
+      users = users.filter((user) => user.organization_id === organizationId);
+    }
+
+    if (status === 'active') {
+      users = users.filter((user) => user.is_active);
+    } else if (status === 'inactive') {
+      users = users.filter((user) => !user.is_active);
+    }
+
     if (!query) {
       return users;
     }
+
     return users.filter(
       (user) =>
         user.email.toLowerCase().includes(query) ||
-        (user.display_name && user.display_name.toLowerCase().includes(query)),
+        (user.display_name && user.display_name.toLowerCase().includes(query)) ||
+        (user.organization_name && user.organization_name.toLowerCase().includes(query)) ||
+        user.roles.some((role) => role.toLowerCase().includes(query)),
     );
   });
+
+  clearFilters() {
+    this.searchQuery.set('');
+    this.filterOrganizationId.set('');
+    this.filterStatus.set('all');
+  }
+
+  onFilterStatusChange(value: string) {
+    if (value === 'all' || value === 'active' || value === 'inactive') {
+      this.filterStatus.set(value);
+    }
+  }
 
   ngOnInit() {
     this.refresh();
@@ -458,6 +581,11 @@ export class UsersPage implements OnInit {
 
   async save() {
     const organizationId = this.formOrganizationId || null;
+
+    if (this.formRoles.length === 0) {
+      toast.error('Sélectionnez au moins un rôle.');
+      return;
+    }
 
     try {
       if (this.dialogMode() === 'create') {

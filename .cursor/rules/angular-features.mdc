@@ -1,0 +1,43 @@
+---
+description: Angular feature module patterns (services, signals, lazy routes)
+globs: src/app/features/**
+alwaysApply: false
+---
+
+# Angular Features
+
+## Service pattern
+
+```typescript
+@Injectable({ providedIn: 'root' })
+export class ItemsService {
+  private readonly supabase = inject(SupabaseService).client;
+  private readonly _items = signal<Item[]>([]);
+  private readonly _loading = signal(false);
+  readonly items = this._items.asReadonly();
+  readonly loading = this._loading.asReadonly();
+
+  async load(): Promise<void> { /* supabase.from(...).select() */ }
+}
+```
+
+## Page pattern
+
+- `ChangeDetectionStrategy.OnPush`
+- Inject service, expose readonly signals
+- `ngOnInit` calls `service.load()`
+- Never inject `SupabaseService` in pages
+
+## Routes
+
+```typescript
+export const ITEMS_ROUTES: Routes = [
+  { path: '', loadComponent: () => import('./items.page').then(m => m.ItemsPage) },
+];
+```
+
+Register in `app.routes.ts` with `loadChildren` + guards.
+
+## Filters
+
+Use `signal('')` + `computed()` — plain properties break OnPush reactivity.

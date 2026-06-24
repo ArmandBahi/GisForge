@@ -1,0 +1,31 @@
+---
+description: Supabase migrations, RLS, RPC, and public views
+globs: supabase/**
+alwaysApply: false
+---
+
+# Supabase Conventions
+
+## Migrations
+
+File: `supabase/migrations/YYYYMMDDHHMMSS_description.sql`
+
+After migration: `npm run gen:types`
+
+## New org-scoped table checklist
+
+1. Create table in schema (e.g. `app` or extend `administration`)
+2. Enable RLS + policies scoped by `organization_id`
+3. Create `public.<table>` view with `security_invoker = true`
+4. GRANT appropriate permissions on public view
+5. Regenerate TypeScript types
+
+## RPC for admin operations
+
+Use `SECURITY DEFINER` when RLS would block legitimate admin actions (e.g. `create_user`, `update_user_roles`, `delete_user`).
+
+## Seed
+
+`supabase/seed.sql` runs on `supabase db reset` (configured in `config.toml`).
+
+Public signup disabled — users created via RPC by admins.
