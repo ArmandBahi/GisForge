@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
   LucideLayoutDashboard,
@@ -6,6 +6,8 @@ import {
   LucideLogOut,
   LucideX,
 } from '@lucide/angular';
+import { toast } from 'ngx-sonner';
+import { AuthService } from '@app/core/auth/auth.service';
 import { HlmButtonImports } from '@app/shared/ui/button';
 
 @Component({
@@ -56,13 +58,16 @@ import { HlmButtonImports } from '@app/shared/ui/button';
     </nav>
 
     <div class="border-t border-sidebar-border p-3">
-      <div class="mb-2 truncate px-3 text-xs text-sidebar-foreground/50">—</div>
+      <div class="mb-2 truncate px-3 text-xs text-sidebar-foreground/70">
+        {{ displayName() }}
+      </div>
       <button
         hlmBtn
         variant="ghost"
         class="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent"
         type="button"
-        disabled
+        [disabled]="authService.loading()"
+        (click)="onSignOut()"
       >
         <svg lucideLogOut class="size-4"></svg>
         Déconnexion
@@ -71,5 +76,27 @@ import { HlmButtonImports } from '@app/shared/ui/button';
   `,
 })
 export class AppSidebarComponent {
+  readonly authService = inject(AuthService);
   readonly navigate = output<void>();
+
+  displayName(): string {
+    const profile = this.authService.userProfile();
+    if (profile?.display_name) {
+      return profile.display_name;
+    }
+    if (profile?.email) {
+      return profile.email;
+    }
+    return this.authService.user()?.email ?? '—';
+  }
+
+  async onSignOut() {
+    try {
+      await this.authService.signOut();
+      toast.success('Déconnexion réussie.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erreur lors de la déconnexion.';
+      toast.error(message);
+    }
+  }
 }

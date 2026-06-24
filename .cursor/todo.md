@@ -11,9 +11,9 @@ L'objectif est d'avoir une coquille vide prête à l'emploi avec les bons outils
 
 On met en place l'accès et les droits (indispensable avant de faire des features métier).
 
-1. Services d'Auth : Création du AuthService basé sur les Signals (gestion de l'état utilisateur courant, rôles, permissions).
-2. Guards Angular : Création de authGuard et roleGuard.
-3. Pages publiques : Écran de Login.
+1. ~~Services d'Auth : Création du AuthService basé sur les Signals (gestion de l'état utilisateur courant, rôles, permissions).~~
+2. ~~Guards Angular : Création de authGuard et roleGuard.~~
+3. ~~Pages publiques : Écran de Login.~~
 
 ## Phase 3 : La feature Pilote (Gestion des Utilisateurs)
 
