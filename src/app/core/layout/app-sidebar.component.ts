@@ -1,0 +1,75 @@
+import { ChangeDetectionStrategy, Component, output } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  LucideLayoutDashboard,
+  LucideLayers,
+  LucideLogOut,
+  LucideX,
+} from '@lucide/angular';
+import { HlmButtonImports } from '@app/shared/ui/button';
+
+@Component({
+  selector: 'app-sidebar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    LucideLayoutDashboard,
+    LucideLayers,
+    LucideLogOut,
+    LucideX,
+    HlmButtonImports,
+  ],
+  host: {
+    class:
+      'flex w-60 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground',
+  },
+  template: `
+    <div class="flex h-14 items-center justify-between gap-2 border-b border-sidebar-border px-4">
+      <div class="flex items-center gap-2">
+        <svg lucideLayers class="size-5 text-sidebar-foreground"></svg>
+        <span class="text-sm font-semibold">GisForge</span>
+      </div>
+      <button
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        class="lg:hidden text-sidebar-foreground"
+        type="button"
+        (click)="navigate.emit()"
+      >
+        <svg lucideX class="size-5"></svg>
+      </button>
+    </div>
+
+    <nav class="flex-1 space-y-1 p-3">
+      <a
+        routerLink="/"
+        routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        (click)="navigate.emit()"
+      >
+        <svg lucideLayoutDashboard class="size-4"></svg>
+        Dashboard
+      </a>
+    </nav>
+
+    <div class="border-t border-sidebar-border p-3">
+      <div class="mb-2 truncate px-3 text-xs text-sidebar-foreground/50">—</div>
+      <button
+        hlmBtn
+        variant="ghost"
+        class="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent"
+        type="button"
+        disabled
+      >
+        <svg lucideLogOut class="size-4"></svg>
+        Déconnexion
+      </button>
+    </div>
+  `,
+})
+export class AppSidebarComponent {
+  readonly navigate = output<void>();
+}
