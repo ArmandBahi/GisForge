@@ -39,10 +39,11 @@ C'est ici qu'on valide le "CRUD pattern" qui servira d'exemple à l'IA pour tout
 
 ## Phase 3.2 : corrections diverses
 
-- Si une organisation n'est pas active, il faut bloquer l'accès à l'application.
-- Il y a un problème sur l'entête des modales : si j'ajoute une organisation il y a écrit `{{ dialogMode() === 'create' ? 'Nouvelle organisation' : 'Modifier l'organisation' }}`
+- ~~Si une organisation n'est pas active, il faut bloquer l'accès à l'application.~~
+- ~~Il y a un problème sur l'entête des modales : si j'ajoute une organisation il y a écrit `{{ dialogMode() === 'create' ? 'Nouvelle organisation' : 'Modifier l'organisation' }}`~~
 - Pas de suppression d'utilisateur
 - Manque un menu "Mon profil" où l'utilisateur peut modifier son nom complet, et son mot de passe.
+- Un super-admin peut se switcher d'organisation.
 
 
 ## Phase 3.3 : corrections diverses

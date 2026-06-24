@@ -156,7 +156,11 @@ type DialogMode = 'create' | 'edit';
           <hlm-dialog-content>
             <hlm-dialog-header>
               <h3 hlmDialogTitle>
-                {{ dialogMode() === 'create' ? 'Nouvelle organisation' : 'Modifier l\'organisation' }}
+                @if (dialogMode() === 'create') {
+                  Nouvelle organisation
+                } @else {
+                  Modifier l'organisation
+                }
               </h3>
             </hlm-dialog-header>
 
