@@ -63,7 +63,8 @@ type DialogMode = 'create' | 'edit';
           hlmInput
           type="search"
           placeholder="Rechercher par nom ou description…"
-          [(ngModel)]="searchQuery"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
           name="search"
           class="w-full sm:max-w-sm"
         />
@@ -251,13 +252,13 @@ export class GroupsPage implements OnInit {
   readonly dialogState = signal<'open' | 'closed'>('closed');
   readonly editingGroup = signal<ManagedGroup | null>(null);
 
-  searchQuery = '';
+  readonly searchQuery = signal('');
   formName = '';
   formDescription = '';
   formMemberUids: string[] = [];
 
   readonly filteredGroups = computed(() => {
-    const query = this.searchQuery.toLowerCase().trim();
+    const query = this.searchQuery().toLowerCase().trim();
     const groups = this.groupsService.groups();
     if (!query) {
       return groups;

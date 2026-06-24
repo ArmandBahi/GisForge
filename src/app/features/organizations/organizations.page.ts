@@ -63,7 +63,8 @@ type DialogMode = 'create' | 'edit';
           hlmInput
           type="search"
           placeholder="Rechercher par nom ou slug…"
-          [(ngModel)]="searchQuery"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
           name="search"
           class="w-full sm:max-w-sm"
         />
@@ -216,13 +217,13 @@ export class OrganizationsPage implements OnInit {
   readonly dialogState = signal<'open' | 'closed'>('closed');
   readonly editingOrganization = signal<ManagedOrganization | null>(null);
 
-  searchQuery = '';
+  readonly searchQuery = signal('');
   formName = '';
   formSlug = '';
   formIsActive = true;
 
   readonly filteredOrganizations = computed(() => {
-    const query = this.searchQuery.toLowerCase().trim();
+    const query = this.searchQuery().toLowerCase().trim();
     const organizations = this.organizationsService.organizations();
     if (!query) {
       return organizations;
