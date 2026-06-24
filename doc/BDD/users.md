@@ -32,7 +32,7 @@ Profil applicatif lié à `auth.users`.
 | `avatar_url` | `text` | |
 | `organization_id` | `uuid` | FK → `organization(id)` RESTRICT, NOT NULL |
 | `is_active` | `boolean` | défaut `true` |
-| `must_change_password` | `boolean` | défaut `false` |
+| `must_change_password` | `boolean` | défaut `false` — si `true`, l'utilisateur est redirigé vers `/my-profile` jusqu'à changement de mot de passe |
 | `created_at`, `updated_at` | `timestamptz` | |
 
 **Trigger** : `set_updated_at()` sur UPDATE.

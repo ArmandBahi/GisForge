@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateChildFn, CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import type { AppRole } from './auth.types';
 
@@ -21,6 +21,19 @@ export const authGuard: CanActivateFn = async () => {
   return true;
 };
 
+export const passwordChangeChildGuard: CanActivateChildFn = async (_, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  await authService.whenReady();
+
+  if (authService.mustChangePassword() && !state.url.startsWith('/my-profile')) {
+    return router.createUrlTree(['/my-profile']);
+  }
+
+  return true;
+};
+
 export const guestGuard: CanActivateFn = async () => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -28,7 +41,8 @@ export const guestGuard: CanActivateFn = async () => {
   await authService.whenReady();
 
   if (authService.isAuthenticated() && authService.canAccessApp()) {
-    return router.createUrlTree(['/']);
+    const target = authService.mustChangePassword() ? '/my-profile' : '/';
+    return router.createUrlTree([target]);
   }
 
   return true;

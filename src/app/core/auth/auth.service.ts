@@ -26,6 +26,9 @@ export class AuthService {
   readonly canAccessApp = computed(
     () => this.isAuthenticated() && this.organizationActive() === true,
   );
+  readonly mustChangePassword = computed(
+    () => this.userProfile()?.must_change_password === true,
+  );
 
   constructor() {
     this.initializeAuth();
@@ -92,7 +95,8 @@ export class AuthService {
         if (event === 'SIGNED_OUT') {
           this.router.navigate(['/login']);
         } else if (event === 'SIGNED_IN' && this.router.url === '/login' && this.canAccessApp()) {
-          this.router.navigate(['/']);
+          const target = this.mustChangePassword() ? '/my-profile' : '/';
+          this.router.navigate([target]);
         }
       });
     } catch (error) {

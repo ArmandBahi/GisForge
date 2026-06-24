@@ -170,7 +170,12 @@ export class LoginPage implements OnInit {
       if (this.mode() === 'signin') {
         await this.authService.signIn(this.email, this.password);
         toast.success('Connexion réussie !');
-        this.router.navigate(['/']);
+        if (this.authService.mustChangePassword()) {
+          toast.info('Vous devez changer votre mot de passe pour continuer.');
+          this.router.navigate(['/my-profile']);
+        } else {
+          this.router.navigate(['/']);
+        }
       } else {
         await this.authService.resetPassword(this.email);
         toast.success('Un email de réinitialisation vous a été envoyé.');

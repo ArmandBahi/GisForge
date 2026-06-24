@@ -53,16 +53,18 @@ import { HlmButtonImports } from '@app/shared/ui/button';
     </div>
 
     <nav class="flex-1 space-y-1 p-3">
-      <a
-        routerLink="/"
-        routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-        (click)="navigate.emit()"
-      >
-        <svg lucideLayoutDashboard class="size-4"></svg>
-        Dashboard
-      </a>
+      @if (!authService.mustChangePassword()) {
+        <a
+          routerLink="/"
+          routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          (click)="navigate.emit()"
+        >
+          <svg lucideLayoutDashboard class="size-4"></svg>
+          Dashboard
+        </a>
+      }
       <a
         routerLink="/my-profile"
         routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
@@ -72,45 +74,47 @@ import { HlmButtonImports } from '@app/shared/ui/button';
         <svg lucideUser class="size-4"></svg>
         Mon profil
       </a>
-      <a
-        routerLink="/my-organization"
-        routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
-        class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-        (click)="navigate.emit()"
-      >
-        <svg lucideBuilding2 class="size-4"></svg>
-        Mon organisation
-      </a>
-      @if (authService.hasRole('super_admin')) {
+      @if (!authService.mustChangePassword()) {
         <a
-          routerLink="/organizations"
+          routerLink="/my-organization"
           routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
           class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           (click)="navigate.emit()"
         >
           <svg lucideBuilding2 class="size-4"></svg>
-          Organisations
+          Mon organisation
         </a>
-      }
-      @if (authService.hasRole('super_admin') || authService.hasRole('organization_admin')) {
-        <a
-          routerLink="/users"
-          routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
-          class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          (click)="navigate.emit()"
-        >
-          <svg lucideUsers class="size-4"></svg>
-          Utilisateurs
-        </a>
-        <a
-          routerLink="/groups"
-          routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
-          class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          (click)="navigate.emit()"
-        >
-          <svg lucideFolder class="size-4"></svg>
-          Groupes
-        </a>
+        @if (authService.hasRole('super_admin')) {
+          <a
+            routerLink="/organizations"
+            routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
+            class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            (click)="navigate.emit()"
+          >
+            <svg lucideBuilding2 class="size-4"></svg>
+            Organisations
+          </a>
+        }
+        @if (authService.hasRole('super_admin') || authService.hasRole('organization_admin')) {
+          <a
+            routerLink="/users"
+            routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
+            class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            (click)="navigate.emit()"
+          >
+            <svg lucideUsers class="size-4"></svg>
+            Utilisateurs
+          </a>
+          <a
+            routerLink="/groups"
+            routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
+            class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            (click)="navigate.emit()"
+          >
+            <svg lucideFolder class="size-4"></svg>
+            Groupes
+          </a>
+        }
       }
     </nav>
 
@@ -118,6 +122,11 @@ import { HlmButtonImports } from '@app/shared/ui/button';
       <div class="mb-2 truncate px-3 text-xs text-sidebar-foreground/70">
         {{ displayName() }}
       </div>
+      @if (authService.mustChangePassword()) {
+        <p class="mb-2 px-3 text-xs text-amber-600 dark:text-amber-400">
+          Changement de mot de passe requis
+        </p>
+      }
       <button
         hlmBtn
         variant="ghost"
