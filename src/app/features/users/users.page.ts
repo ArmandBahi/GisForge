@@ -98,6 +98,9 @@ type DialogMode = 'create' | 'edit';
               <tr hlmTr>
                 <th hlmTh>Nom</th>
                 <th hlmTh>Email</th>
+                @if (authService.hasRole('super_admin')) {
+                  <th hlmTh>Organisation</th>
+                }
                 <th hlmTh>Statut</th>
                 <th hlmTh>Rôles</th>
                 <th hlmTh>Créé le</th>
@@ -109,6 +112,9 @@ type DialogMode = 'create' | 'edit';
                 <tr hlmTr>
                   <td hlmTd class="font-medium">{{ user.display_name || '—' }}</td>
                   <td hlmTd class="font-mono text-xs">{{ user.email }}</td>
+                  @if (authService.hasRole('super_admin')) {
+                    <td hlmTd>{{ user.organization_name || '—' }}</td>
+                  }
                   <td hlmTd>
                     @if (user.is_active) {
                       <span class="text-xs rounded-full bg-primary/10 text-primary px-2 py-0.5">Actif</span>
@@ -156,7 +162,11 @@ type DialogMode = 'create' | 'edit';
                 </tr>
               } @empty {
                 <tr hlmTr>
-                  <td hlmTd colspan="6" class="text-center py-8 text-muted-foreground">
+                  <td
+                    hlmTd
+                    [attr.colspan]="authService.hasRole('super_admin') ? 7 : 6"
+                    class="text-center py-8 text-muted-foreground"
+                  >
                     Aucun utilisateur trouvé.
                   </td>
                 </tr>
@@ -356,7 +366,8 @@ export class UsersPage implements OnInit {
     return users.filter(
       (user) =>
         user.email.toLowerCase().includes(query) ||
-        (user.display_name && user.display_name.toLowerCase().includes(query)),
+        (user.display_name && user.display_name.toLowerCase().includes(query)) ||
+        (user.organization_name && user.organization_name.toLowerCase().includes(query)),
     );
   });
 

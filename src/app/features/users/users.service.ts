@@ -63,17 +63,22 @@ export class UsersService {
         throw rolesError;
       }
 
+      const orgNameById = new Map(this._organizations().map((org) => [org.id, org.name]));
+
       const mapped: ManagedUser[] = (rawUsers ?? []).map((user) => {
         const roleNames = (rawUserRoles ?? [])
           .filter((row) => row.uid === user.uid)
           .map((row) => row.roles?.name)
           .filter((name): name is AppRole => !!name);
 
+        const organizationId = user.organization_id ?? null;
+
         return {
           uid: user.uid ?? '',
           email: user.email ?? '',
           display_name: user.display_name,
-          organization_id: user.organization_id,
+          organization_id: organizationId,
+          organization_name: organizationId ? (orgNameById.get(organizationId) ?? null) : null,
           is_active: user.is_active ?? true,
           must_change_password: user.must_change_password ?? false,
           created_at: user.created_at ?? '',

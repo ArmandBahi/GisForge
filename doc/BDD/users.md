@@ -1,8 +1,8 @@
 # Administration — modèle de données
 
 > Multi-tenant : chaque utilisateur appartient à une **organisation** (obligatoire).  
-> Tous les rôles admin voient uniquement les users et groupes de leur organisation, y compris `super_admin`.  
-> Le `super_admin` gère en plus toutes les organisations (CRUD plateforme) et peut réassigner l'organisation d'un utilisateur.
+> `organization_admin` voit et gère uniquement les users et groupes de son organisation.  
+> `super_admin` voit **tous** les utilisateurs (toutes organisations) et peut réassigner l'organisation d'un utilisateur.
 
 ---
 
@@ -107,9 +107,9 @@ PK composite `(uid, group_id)`.
 | Table | SELECT | INSERT / UPDATE / DELETE |
 |-------|--------|--------------------------|
 | `organization` | Sa propre organisation OU super_admin (toutes) | super_admin uniquement (CRUD global) |
-| `user` | Soi-même, OU users de son org (admin) | Admin scopé org ; super_admin peut créer/réassigner vers n'importe quelle org |
+| `user` | Soi-même, OU tous les users (super_admin), OU users de son org (organization_admin) | super_admin global ; organization_admin scopé org |
 | `role` | Tout utilisateur authentifié | super_admin uniquement |
-| `user_role` | Ses propres rôles, OU rôles des users de son org (admin) | Admin scopé org |
+| `user_role` | Ses propres rôles, OU tous (super_admin), OU users de son org (organization_admin) | super_admin global ; organization_admin scopé org |
 | `group` | Groupes de son org | Admin scopé org |
 | `user_group` | Ses propres groupes, OU groupes de son org (admin) | Admin scopé org |
 
