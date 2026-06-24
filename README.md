@@ -75,6 +75,12 @@ Les valeurs de dev Angular sont dans `src/environments/environment.development.t
 - Guards : `authGuard`, `guestGuard`, `roleGuard`, `privilegeGuard`
 - Routes protégées : layout + dashboard nécessitent une session active
 
+## Gestion des utilisateurs
+
+- Route `/users` (lazy) protégée par `privilegeGuard(['users_manage'])` — accessible aux `super_admin` et `admin_client`
+- `UsersService` + `users.page.ts` : liste, création (via `auth.signUp` + trigger), édition profil/rôles
+- Sidebar : lien « Utilisateurs » visible si `users_manage`
+
 ## Structure
 
 Voir [.cursor/custom-lovable.md](.cursor/custom-lovable.md) pour les conventions IA.

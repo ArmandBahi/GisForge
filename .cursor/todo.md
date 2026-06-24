@@ -19,9 +19,9 @@ On met en place l'accès et les droits (indispensable avant de faire des feature
 
 C'est ici qu'on valide le "CRUD pattern" qui servira d'exemple à l'IA pour toutes les futures features.
 
-1. Architecture lazy : Création du dossier features/users/ avec son routing lazy (loadChildren / loadComponent).
-2. Le Service : users.service.ts avec la couche data (Signals + requêtes Supabase).
-3. L'Interface : users.page.ts, la Data Table Spartan (hlm-table), et le dialogue de création/édition (hlm-dialog).
+1. ~~Architecture lazy : Création du dossier features/users/ avec son routing lazy (loadChildren / loadComponent).~~
+2. ~~Le Service : users.service.ts avec la couche data (Signals + requêtes Supabase).~~
+3. ~~L'Interface : users.page.ts, la Data Table Spartan (hlm-table), et le dialogue de création/édition (hlm-dialog).~~
 4. Idem pour les Groupes ou les affectations de Rôles si on veut pousser l'exemple.
 
 ## Phase 4 : Documentation & Standardisation IA

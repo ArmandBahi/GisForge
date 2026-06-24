@@ -40,6 +40,12 @@
       ],
       "@app/shared/ui/separator": [
         "./src/app/shared/ui/separator/src/index.ts"
+      ],
+      "@app/shared/ui/table": [
+        "./src/app/shared/ui/table/src/index.ts"
+      ],
+      "@app/shared/ui/dialog": [
+        "./src/app/shared/ui/dialog/src/index.ts"
       ]
     }
   },

@@ -76,6 +76,13 @@ export class AuthService {
     return data;
   }
 
+  async refreshProfile(): Promise<void> {
+    const userId = this.user()?.id;
+    if (userId) {
+      await this.loadUserData(userId);
+    }
+  }
+
   private async initializeAuth() {
     try {
       const {
