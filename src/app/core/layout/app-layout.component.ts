@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { LucideMenu } from '@lucide/angular';
+import { LucideMenu, LucidePanelLeft, LucidePanelLeftClose } from '@lucide/angular';
 import { AuthService } from '@app/core/auth/auth.service';
 import { HlmButtonImports } from '@app/shared/ui/button';
 import { HlmSkeletonImports } from '@app/shared/ui/skeleton';
 import { AppSidebarComponent } from './app-sidebar.component';
+
+const SIDEBAR_COLLAPSED_KEY = 'gisforge.sidebarCollapsed';
 
 @Component({
   selector: 'app-layout',
@@ -12,6 +14,8 @@ import { AppSidebarComponent } from './app-sidebar.component';
   imports: [
     RouterOutlet,
     LucideMenu,
+    LucidePanelLeft,
+    LucidePanelLeftClose,
     HlmButtonImports,
     HlmSkeletonImports,
     AppSidebarComponent,
@@ -36,6 +40,7 @@ import { AppSidebarComponent } from './app-sidebar.component';
 
         <app-sidebar
           class="fixed inset-y-0 left-0 z-50 lg:static lg:translate-x-0 transition-transform"
+          [collapsed]="sidebarCollapsed()"
           [class.-translate-x-full]="!sidebarOpen()"
           [class.translate-x-0]="sidebarOpen()"
           (navigate)="sidebarOpen.set(false)"
@@ -53,6 +58,21 @@ import { AppSidebarComponent } from './app-sidebar.component';
             >
               <svg lucideMenu class="size-5"></svg>
             </button>
+            <button
+              hlmBtn
+              variant="ghost"
+              size="icon"
+              class="hidden lg:flex"
+              type="button"
+              [attr.aria-label]="sidebarCollapsed() ? 'Étendre la sidebar' : 'Réduire la sidebar'"
+              (click)="toggleSidebarCollapsed()"
+            >
+              @if (sidebarCollapsed()) {
+                <svg lucidePanelLeft class="size-5"></svg>
+              } @else {
+                <svg lucidePanelLeftClose class="size-5"></svg>
+              }
+            </button>
             <div class="flex-1"></div>
           </header>
           <main class="flex-1 overflow-auto p-6">
@@ -66,4 +86,19 @@ import { AppSidebarComponent } from './app-sidebar.component';
 export class AppLayoutComponent {
   readonly authService = inject(AuthService);
   readonly sidebarOpen = signal(false);
+  readonly sidebarCollapsed = signal(this.readCollapsedPreference());
+
+  toggleSidebarCollapsed() {
+    const collapsed = !this.sidebarCollapsed();
+    this.sidebarCollapsed.set(collapsed);
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(collapsed));
+  }
+
+  private readCollapsedPreference(): boolean {
+    try {
+      return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  }
 }

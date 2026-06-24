@@ -66,8 +66,9 @@ Les valeurs de dev Angular sont dans `src/environments/environment.development.t
 ## Gestion des organisations
 
 - Route `/organizations` (lazy) protégée par `roleGuard(['super_admin'])` — CRUD toutes les orgs
-- Route `/my-organization` — lecture de l'organisation courante (tous les utilisateurs authentifiés)
-- Sidebar : « Organisations » (super_admin), « Mon organisation » (tous)
+- Route `/my-profile` — profil utilisateur + lecture de l'organisation courante
+- Redirection `/my-organization` → `/my-profile`
+- Sidebar : « Organisations » (super_admin, section Administration)
 
 ## Gestion des utilisateurs
 

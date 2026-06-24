@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LucideLayers } from '@lucide/angular';
+import { LucideAnvil } from '@lucide/angular';
 import { toast } from 'ngx-sonner';
 import { AuthService } from '@app/core/auth/auth.service';
 import { HlmButtonImports } from '@app/shared/ui/button';
@@ -15,7 +15,7 @@ type AuthMode = 'signin' | 'reset';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
-    LucideLayers,
+    LucideAnvil,
     HlmButtonImports,
     HlmInputImports,
     HlmLabelImports,
@@ -25,7 +25,7 @@ type AuthMode = 'signin' | 'reset';
       <div class="w-full max-w-md space-y-8">
         <div class="text-center space-y-2">
           <div class="inline-flex items-center justify-center size-16 rounded-xl bg-primary/10 text-primary mb-2">
-            <svg lucideLayers class="size-8"></svg>
+            <svg lucideAnvil class="size-8"></svg>
           </div>
           <h1 class="text-3xl font-bold tracking-tight">GisForge</h1>
           <p class="text-muted-foreground text-sm">Forge your own GIS</p>

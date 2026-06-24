@@ -37,8 +37,8 @@ export const routes: Routes = [
       },
       {
         path: 'my-organization',
-        loadComponent: () =>
-          import('./features/organizations/my-organization.page').then((m) => m.MyOrganizationPage),
+        redirectTo: 'my-profile',
+        pathMatch: 'full',
       },
       {
         path: 'my-profile',

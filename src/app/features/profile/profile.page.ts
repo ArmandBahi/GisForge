@@ -1,23 +1,29 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideUser } from '@lucide/angular';
+import { LucideBuilding2, LucideUser } from '@lucide/angular';
 import { toast } from 'ngx-sonner';
 import { AuthService } from '@app/core/auth/auth.service';
+import { OrganizationsService } from '@app/features/organizations/organizations.service';
 import { HlmButtonImports } from '@app/shared/ui/button';
 import { HlmInputImports } from '@app/shared/ui/input';
 import { HlmLabelImports } from '@app/shared/ui/label';
+import { HlmSkeletonImports } from '@app/shared/ui/skeleton';
 import { ProfileService } from './profile.service';
 
 @Component({
   selector: 'app-profile-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    DatePipe,
     FormsModule,
+    LucideBuilding2,
     LucideUser,
     HlmButtonImports,
     HlmInputImports,
     HlmLabelImports,
+    HlmSkeletonImports,
   ],
   template: `
     <div class="space-y-6">
@@ -41,7 +47,7 @@ import { ProfileService } from './profile.service';
           @if (authService.mustChangePassword()) {
             Définissez votre nouveau mot de passe.
           } @else {
-            Modifiez vos informations personnelles et votre mot de passe.
+            Consultez vos informations personnelles, votre organisation et modifiez votre mot de passe.
           }
         </p>
       </div>
@@ -78,6 +84,54 @@ import { ProfileService } from './profile.service';
               {{ profileService.saving() ? 'Enregistrement…' : 'Enregistrer le nom' }}
             </button>
           </form>
+        </div>
+
+        <div class="rounded-lg border bg-card p-6 max-w-xl space-y-4">
+          <h2 class="text-sm font-semibold flex items-center gap-2">
+            <svg lucideBuilding2 class="size-4"></svg>
+            Mon organisation
+          </h2>
+
+          @if (organizationsService.loading()) {
+            <div class="space-y-3">
+              <div hlmSkeleton class="h-6 w-48"></div>
+              <div hlmSkeleton class="h-4 w-full"></div>
+              <div hlmSkeleton class="h-4 w-2/3"></div>
+            </div>
+          } @else {
+            @if (organizationsService.currentOrganization(); as organization) {
+              <div class="space-y-4">
+                <div>
+                  <p class="text-xs text-muted-foreground uppercase tracking-wide">Nom</p>
+                  <p class="text-lg font-semibold">{{ organization.name }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted-foreground uppercase tracking-wide">Slug</p>
+                  <p class="font-mono text-sm">{{ organization.slug }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted-foreground uppercase tracking-wide">Statut</p>
+                  @if (organization.is_active) {
+                    <span class="text-xs rounded-full bg-primary/10 text-primary px-2 py-0.5">Active</span>
+                  } @else {
+                    <span class="text-xs rounded-full bg-muted text-muted-foreground px-2 py-0.5">Inactive</span>
+                  }
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
+                  <div>
+                    <p class="text-xs text-muted-foreground">Créée le</p>
+                    <p class="text-sm">{{ organization.created_at | date: 'dd/MM/yyyy HH:mm' }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-muted-foreground">Mise à jour</p>
+                    <p class="text-sm">{{ organization.updated_at | date: 'dd/MM/yyyy HH:mm' }}</p>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <p class="text-sm text-muted-foreground">Aucune organisation associée à votre compte.</p>
+            }
+          }
         </div>
       }
 
@@ -122,6 +176,7 @@ import { ProfileService } from './profile.service';
 export class ProfilePage implements OnInit {
   readonly authService = inject(AuthService);
   readonly profileService = inject(ProfileService);
+  readonly organizationsService = inject(OrganizationsService);
   private readonly router = inject(Router);
 
   formDisplayName = '';
@@ -130,10 +185,22 @@ export class ProfilePage implements OnInit {
 
   ngOnInit() {
     this.syncDisplayName();
+    if (!this.authService.mustChangePassword()) {
+      this.loadOrganization();
+    }
   }
 
   private syncDisplayName() {
     this.formDisplayName = this.authService.userProfile()?.display_name ?? '';
+  }
+
+  private async loadOrganization() {
+    try {
+      await this.organizationsService.loadCurrent();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erreur lors du chargement.';
+      toast.error(message);
+    }
   }
 
   async saveDisplayName() {
@@ -164,6 +231,7 @@ export class ProfilePage implements OnInit {
       this.formPasswordConfirm = '';
       toast.success('Mot de passe mis à jour.');
       if (!this.authService.mustChangePassword()) {
+        await this.loadOrganization();
         this.router.navigate(['/']);
       }
     } catch (error: unknown) {
