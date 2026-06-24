@@ -42,14 +42,28 @@ Connexion : [http://localhost:4200/login](http://localhost:4200/login)
 
 L'inscription publique est désactivée (`enable_signup = false`). Les admins créent les comptes via `/users` (RPC `create_user`).
 
+## Supabase CLI (local)
+
+Commandes à lancer depuis la racine du projet (Docker requis).
+
+| Commande | Description |
+|----------|-------------|
+| `npx supabase start` | Démarre Supabase en local (Postgres, Auth, Studio…) |
+| `npx supabase stop` | Arrête les conteneurs Docker Supabase |
+| `npx supabase status` | Affiche URLs, ports et clés API du stack local |
+| `npx supabase db reset` | Réinitialise la DB : migrations + seed (org `default` + admin) |
+| `npx supabase migration up` | Applique uniquement les migrations en attente (sans reset) |
+| `npm run gen:types` | Génère `src/app/core/supabase/database.types.ts` depuis la DB locale |
+
+Studio local : [http://localhost:54323](http://localhost:54323) (après `start`).
+
 ## Scripts utiles
 
 | Commande | Description |
 |----------|-------------|
 | `npm start` | Dev server Angular |
 | `npm run build` | Build production |
-| `npm run gen:types` | Génère `src/app/core/supabase/database.types.ts` |
-| `npm run gen:types:check` | Idem, avec vérif que Supabase tourne |
+| `npm run gen:types:check` | Génère les types Supabase, avec vérif que le stack local tourne |
 
 ## Configuration Supabase
 
