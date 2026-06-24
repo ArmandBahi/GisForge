@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
+  LucideFolder,
   LucideLayoutDashboard,
   LucideLayers,
   LucideLogOut,
@@ -17,6 +18,7 @@ import { HlmButtonImports } from '@app/shared/ui/button';
   imports: [
     RouterLink,
     RouterLinkActive,
+    LucideFolder,
     LucideLayoutDashboard,
     LucideLayers,
     LucideLogOut,
@@ -66,6 +68,15 @@ import { HlmButtonImports } from '@app/shared/ui/button';
         >
           <svg lucideUsers class="size-4"></svg>
           Utilisateurs
+        </a>
+        <a
+          routerLink="/groups"
+          routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
+          class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          (click)="navigate.emit()"
+        >
+          <svg lucideFolder class="size-4"></svg>
+          Groupes
         </a>
       }
     </nav>

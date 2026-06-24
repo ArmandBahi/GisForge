@@ -22,7 +22,25 @@ C'est ici qu'on valide le "CRUD pattern" qui servira d'exemple à l'IA pour tout
 1. ~~Architecture lazy : Création du dossier features/users/ avec son routing lazy (loadChildren / loadComponent).~~
 2. ~~Le Service : users.service.ts avec la couche data (Signals + requêtes Supabase).~~
 3. ~~L'Interface : users.page.ts, la Data Table Spartan (hlm-table), et le dialogue de création/édition (hlm-dialog).~~
-4. Idem pour les Groupes ou les affectations de Rôles si on veut pousser l'exemple.
+4. ~~Idem pour les Groupes ou les affectations de Rôles si on veut pousser l'exemple.~~
+
+
+## Phase 3.1 : gestion organisation
+
+Il y a mésentente sur les attentes de la gestion par organisation.
+
+- Chaque utilisateur est associé à une organisation et ne voit que les données de cette organisation y compris utilisateurs, groupes. Cela marche aussi pour les super-admin.
+- Un menu permet l'administration des organisations (uniquement un super-admin peut y accéder).
+- Un menu permet de visualier "Mon organisation".
+- désactivons la fonctionnalité d'inscription pour l'instant.
+- Seul un super-admin peut changer l'organisation d'un utilisateur
+
+
+## Phase 3.2 : corrections diverses
+
+- Quand je crée un utilisateur depuis l'espace d'administration, je me retrouve ensuite loggé sur ce dernier. Il ne faut pas.
+- Les menus concernant la gestion des comptes (utilisateurs groupes, etc) 
+
 
 ## Phase 4 : Documentation & Standardisation IA
 

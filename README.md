@@ -81,6 +81,12 @@ Les valeurs de dev Angular sont dans `src/environments/environment.development.t
 - `UsersService` + `users.page.ts` : liste, création (via `auth.signUp` + trigger), édition profil/rôles
 - Sidebar : lien « Utilisateurs » visible pour `super_admin` et `organization_admin`
 
+## Gestion des groupes
+
+- Route `/groups` (lazy) protégée par `roleGuard(['super_admin', 'organization_admin'])`
+- `GroupsService` + `groups.page.ts` : liste, création, édition, suppression, affectation des membres (`user_groups`)
+- Sidebar : lien « Groupes » visible pour `super_admin` et `organization_admin`
+
 ## Structure
 
 Voir [.cursor/gis-forge.md](.cursor/gis-forge.md) pour les conventions IA.

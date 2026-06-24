@@ -23,6 +23,11 @@ export const routes: Routes = [
         canActivate: [roleGuard(['super_admin', 'organization_admin'])],
         loadChildren: () => import('./features/users/users.routes').then((m) => m.USERS_ROUTES),
       },
+      {
+        path: 'groups',
+        canActivate: [roleGuard(['super_admin', 'organization_admin'])],
+        loadChildren: () => import('./features/groups/groups.routes').then((m) => m.GROUPS_ROUTES),
+      },
     ],
   },
   {
