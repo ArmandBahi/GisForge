@@ -1,0 +1,57 @@
+import type { BooleanInput } from '@angular/cdk/coercion';
+import { NgComponentOutlet } from '@angular/common';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { LucideX } from '@lucide/angular';
+import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
+import { HlmButton } from '@app/shared/ui/button';
+import { hlm } from '@app/shared/ui/utils';
+import type { ClassValue } from 'clsx';
+import { HlmDialogClose } from './hlm-dialog-close';
+
+@Component({
+  selector: 'hlm-dialog-content',
+  imports: [NgComponentOutlet, LucideX, HlmButton, HlmDialogClose],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    'data-slot': 'dialog-content',
+    '[attr.data-state]': 'state()',
+    '[class]': '_computedClass()',
+  },
+  template: `
+    @if (component) {
+      <ng-container [ngComponentOutlet]="component" />
+    } @else {
+      <ng-content />
+    }
+
+    @if (showCloseButton()) {
+      <button hlmBtn variant="ghost" size="icon-sm" class="absolute end-4 top-4" hlmDialogClose type="button">
+        <span class="sr-only">Fermer</span>
+        <svg lucideX class="size-4"></svg>
+      </button>
+    }
+  `,
+})
+export class HlmDialogContent {
+  private readonly _dialogRef = inject(BrnDialogRef);
+  private readonly _dialogContext = injectBrnDialogContext({ optional: true });
+
+  public readonly userClass = input<ClassValue>('', { alias: 'class' });
+
+  public readonly showCloseButton = input<boolean, BooleanInput>(this._dialogContext?.$showCloseButton ?? true, {
+    transform: booleanAttribute,
+  });
+
+  public readonly state = computed(() => this._dialogRef?.state() ?? 'closed');
+
+  public readonly component = this._dialogContext?.$component;
+  private readonly _dynamicComponentClass = this._dialogContext?.$dynamicComponentClass;
+
+  protected readonly _computedClass = computed(() =>
+    hlm(
+      'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 relative z-50 mx-auto grid w-[calc(100vw-2rem)] gap-4 rounded-lg border p-6 shadow-lg data-[state=closed]:duration-200 data-[state=open]:duration-200 sm:mx-0 sm:max-w-lg',
+      this._dynamicComponentClass,
+      this.userClass(),
+    ),
+  );
+}
