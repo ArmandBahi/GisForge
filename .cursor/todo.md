@@ -42,7 +42,7 @@ C'est ici qu'on valide le "CRUD pattern" qui servira d'exemple à l'IA pour tout
 - ~~Si une organisation n'est pas active, il faut bloquer l'accès à l'application.~~
 - ~~Il y a un problème sur l'entête des modales : si j'ajoute une organisation il y a écrit `{{ dialogMode() === 'create' ? 'Nouvelle organisation' : 'Modifier l'organisation' }}`~~
 - ~~Pas de suppression d'utilisateur : il faut qu'un super-admin ou qu'un admin orga puisse le faire.~~
-- Manque un menu "Mon profil" où l'utilisateur peut modifier son nom complet, et son mot de passe.
+- ~~Manque un menu "Mon profil" où l'utilisateur peut modifier son nom complet, et son mot de passe.~~
 - "Mot de passe à changer" ne fait rien
 - Les menus concernant la gestion (organisations,utilisateurs groupes, etc) doivent être placés en bas de la sidebar.
 - Bouton permettant de collapse la sidebar.

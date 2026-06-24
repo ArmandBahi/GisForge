@@ -39,6 +39,10 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/organizations/my-organization.page').then((m) => m.MyOrganizationPage),
       },
+      {
+        path: 'my-profile',
+        loadComponent: () => import('./features/profile/profile.page').then((m) => m.ProfilePage),
+      },
     ],
   },
   {

@@ -438,6 +438,7 @@ export type Database = {
       }
     }
     Functions: {
+      clear_must_change_password: { Args: never; Returns: undefined }
       create_user: {
         Args: {
           p_display_name: string
@@ -451,6 +452,10 @@ export type Database = {
         Returns: string
       }
       delete_user: { Args: { p_uid: string }; Returns: undefined }
+      update_own_profile: {
+        Args: { p_display_name: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

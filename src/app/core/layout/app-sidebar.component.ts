@@ -6,6 +6,7 @@ import {
   LucideLayoutDashboard,
   LucideLayers,
   LucideLogOut,
+  LucideUser,
   LucideUsers,
   LucideX,
 } from '@lucide/angular';
@@ -24,6 +25,7 @@ import { HlmButtonImports } from '@app/shared/ui/button';
     LucideLayoutDashboard,
     LucideLayers,
     LucideLogOut,
+    LucideUser,
     LucideUsers,
     LucideX,
     HlmButtonImports,
@@ -60,6 +62,15 @@ import { HlmButtonImports } from '@app/shared/ui/button';
       >
         <svg lucideLayoutDashboard class="size-4"></svg>
         Dashboard
+      </a>
+      <a
+        routerLink="/my-profile"
+        routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
+        class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        (click)="navigate.emit()"
+      >
+        <svg lucideUser class="size-4"></svg>
+        Mon profil
       </a>
       <a
         routerLink="/my-organization"
