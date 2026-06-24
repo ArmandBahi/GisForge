@@ -1,3 +1,4 @@
+// Reference implementation — see doc/ai/crud-pattern.md
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';

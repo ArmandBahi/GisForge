@@ -1,3 +1,4 @@
+// Reference implementation — see doc/ai/crud-pattern.md
 import { inject, Injectable, signal } from '@angular/core';
 import { AuthService } from '@app/core/auth/auth.service';
 import { SupabaseService } from '@app/core/supabase/supabase.service';

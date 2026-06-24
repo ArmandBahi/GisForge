@@ -73,7 +73,7 @@ Les valeurs de dev Angular sont dans `src/environments/environment.development.t
 ## Auth
 
 - `AuthService` (`core/auth/`) : session, profil, rôles (`super_admin`, `organization_admin`, `user`)
-- Guards : `authGuard`, `guestGuard`, `roleGuard`
+- Guards : `authGuard`, `guestGuard`, `roleGuard`, `passwordChangeChildGuard`
 - Routes protégées : layout + dashboard nécessitent une session active
 - Inscription publique désactivée (login uniquement)
 
@@ -97,6 +97,28 @@ Les valeurs de dev Angular sont dans `src/environments/environment.development.t
 - `GroupsService` + `groups.page.ts` : liste scoped à l'org, CRUD, affectation des membres
 - Sidebar : lien « Groupes » visible pour `super_admin` et `organization_admin`
 
+## AI-assisted development
+
+Ce boilerplate est conçu pour être forké et étendu avec des outils IA (Cursor, Claude Code).
+
+| Ressource | Description |
+|-----------|-------------|
+| [AGENTS.md](AGENTS.md) | Règles de génération (point d'entrée principal) |
+| [CLAUDE.md](CLAUDE.md) | Point d'entrée Claude Code |
+| [doc/ai/](doc/ai/README.md) | Documentation détaillée (CRUD, checklist, Supabase, UI) |
+| [doc/architecture/](doc/architecture/auth-and-multi-tenant.md) | Auth et multi-tenant |
+| [doc/bdd/](doc/bdd/README.md) | Documentation base de données |
+| `.cursor/rules/` | Règles Cursor (scopées par type de fichier) |
+
+Référence CRUD : `src/app/features/users/` (liste, filtres, dialogs, delete modal).
+
+Voir [CONTRIBUTING.md](CONTRIBUTING.md) pour contribuer.
+
 ## Structure
 
-Voir [.cursor/gis-forge.md](.cursor/gis-forge.md) pour les conventions IA.
+```
+src/app/
+├── core/       # auth, layout, supabase
+├── shared/ui/  # Spartan Helm
+└── features/   # 1 dossier = 1 domaine métier
+```

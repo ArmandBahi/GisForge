@@ -1,0 +1,38 @@
+---
+description: Spartan UI (Helm) patterns for dialogs, tables, and forms
+globs: src/app/**/*.ts
+alwaysApply: false
+---
+
+# Spartan UI
+
+## Imports
+
+From `@app/shared/ui/button`, `@app/shared/ui/dialog`, `@app/shared/ui/table`, etc.
+
+Add new: `npx @spartan-ng/cli add <component>`
+
+## Dialog state sync
+
+```typescript
+readonly dialogState = signal<'open' | 'closed'>('closed');
+
+openCreate() {
+  this.dialogState.set('closed');
+  this.dialogState.set('open');
+}
+
+onDialogStateChanged(state: 'open' | 'closed') {
+  this.dialogState.set(state);
+}
+```
+
+Template: `<hlm-dialog [state]="dialogState()" (stateChanged)="onDialogStateChanged($event)">`
+
+## CRUD layout
+
+Header (title + primary button) → filter bar → `hlm-table` → create/edit dialog → delete dialog.
+
+## Toasts
+
+`toast.success('...')` / `toast.error('...')` from `ngx-sonner`.
