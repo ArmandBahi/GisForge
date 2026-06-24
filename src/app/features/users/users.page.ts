@@ -5,6 +5,7 @@ import {
   LucideEdit,
   LucidePlus,
   LucideRefreshCw,
+  LucideTrash2,
   LucideUsers,
 } from '@lucide/angular';
 import { BrnDialogContent } from '@spartan-ng/brain/dialog';
@@ -32,6 +33,7 @@ type DialogMode = 'create' | 'edit';
     LucidePlus,
     LucideRefreshCw,
     LucideEdit,
+    LucideTrash2,
     BrnDialogContent,
     HlmButtonImports,
     HlmDialogImports,
@@ -128,15 +130,28 @@ type DialogMode = 'create' | 'edit';
                     {{ user.created_at | date: 'dd/MM/yyyy HH:mm' }}
                   </td>
                   <td hlmTd class="text-end">
-                    <button
-                      hlmBtn
-                      variant="ghost"
-                      size="icon-sm"
-                      type="button"
-                      (click)="openEdit(user)"
-                    >
-                      <svg lucideEdit class="size-4"></svg>
-                    </button>
+                    <div class="flex justify-end gap-1">
+                      <button
+                        hlmBtn
+                        variant="ghost"
+                        size="icon-sm"
+                        type="button"
+                        (click)="openEdit(user)"
+                      >
+                        <svg lucideEdit class="size-4"></svg>
+                      </button>
+                      @if (user.uid !== authService.user()?.id) {
+                        <button
+                          hlmBtn
+                          variant="ghost"
+                          size="icon-sm"
+                          type="button"
+                          (click)="openDeleteDialog(user)"
+                        >
+                          <svg lucideTrash2 class="size-4 text-destructive"></svg>
+                        </button>
+                      }
+                    </div>
                   </td>
                 </tr>
               } @empty {
@@ -150,6 +165,35 @@ type DialogMode = 'create' | 'edit';
           </table>
         </div>
       }
+
+      <hlm-dialog [state]="deleteDialogState()" (stateChanged)="onDeleteDialogStateChanged($event)">
+        <ng-template brnDialogContent>
+          <hlm-dialog-content>
+            <hlm-dialog-header>
+              <h3 hlmDialogTitle>Supprimer l'utilisateur</h3>
+              <p hlmDialogDescription>
+                @if (deletingUser(); as user) {
+                  Êtes-vous sûr de vouloir supprimer
+                  <span class="font-medium text-foreground">{{ user.display_name || user.email }}</span>
+                  ? Cette action est irréversible.
+                }
+              </p>
+            </hlm-dialog-header>
+            <hlm-dialog-footer>
+              <button hlmBtn variant="ghost" type="button" (click)="closeDeleteDialog()">Annuler</button>
+              <button
+                hlmBtn
+                variant="destructive"
+                type="button"
+                [disabled]="usersService.saving()"
+                (click)="executeDelete()"
+              >
+                {{ usersService.saving() ? 'Suppression…' : 'Supprimer' }}
+              </button>
+            </hlm-dialog-footer>
+          </hlm-dialog-content>
+        </ng-template>
+      </hlm-dialog>
 
       <hlm-dialog [state]="dialogState()" (stateChanged)="onDialogStateChanged($event)">
         <ng-template brnDialogContent>
@@ -285,7 +329,9 @@ export class UsersPage implements OnInit {
 
   readonly dialogMode = signal<DialogMode>('create');
   readonly dialogState = signal<'open' | 'closed'>('closed');
+  readonly deleteDialogState = signal<'open' | 'closed'>('closed');
   readonly editingUser = signal<ManagedUser | null>(null);
+  readonly deletingUser = signal<ManagedUser | null>(null);
 
   searchQuery = '';
   formEmail = '';
@@ -376,6 +422,38 @@ export class UsersPage implements OnInit {
     this.formRoles = ['user'];
     this.formIsActive = true;
     this.formMustChangePassword = false;
+  }
+
+  openDeleteDialog(user: ManagedUser) {
+    this.deletingUser.set(user);
+    this.deleteDialogState.set('closed');
+    this.deleteDialogState.set('open');
+  }
+
+  onDeleteDialogStateChanged(state: 'open' | 'closed') {
+    this.deleteDialogState.set(state);
+    if (state === 'closed') {
+      this.deletingUser.set(null);
+    }
+  }
+
+  closeDeleteDialog() {
+    this.deleteDialogState.set('closed');
+  }
+
+  async executeDelete() {
+    const user = this.deletingUser();
+    if (!user) {
+      return;
+    }
+    try {
+      await this.usersService.remove(user.uid);
+      toast.success('Utilisateur supprimé.');
+      this.closeDeleteDialog();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erreur lors de la suppression.';
+      toast.error(message);
+    }
   }
 
   async save() {

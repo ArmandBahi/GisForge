@@ -95,6 +95,7 @@ PK composite `(uid, group_id)`.
 | `is_super_admin()` | Raccourci pour `has_role('super_admin')` |
 | `is_organization_admin()` | Raccourci pour `has_role('organization_admin')` |
 | `create_user(...)` | Création d'utilisateur par un admin (RPC, signup public désactivé) |
+| `delete_user(p_uid)` | Suppression d'utilisateur par un admin (RPC, supprime `auth.users`) |
 
 ---
 

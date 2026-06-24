@@ -450,6 +450,7 @@ export type Database = {
         }
         Returns: string
       }
+      delete_user: { Args: { p_uid: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

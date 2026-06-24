@@ -195,6 +195,25 @@ export class UsersService {
     }
   }
 
+  async remove(uid: string): Promise<void> {
+    if (uid === this.auth.user()?.id) {
+      throw new Error('Vous ne pouvez pas supprimer votre propre compte.');
+    }
+
+    this._saving.set(true);
+    try {
+      const { error } = await this.supabase.rpc('delete_user', { p_uid: uid });
+
+      if (error) {
+        throw error;
+      }
+
+      await this.load();
+    } finally {
+      this._saving.set(false);
+    }
+  }
+
   async updateUserRoles(uid: string, roleNames: AppRole[]): Promise<void> {
     const roleIds = this._roles()
       .filter((role) => roleNames.includes(role.name))
