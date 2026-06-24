@@ -3,9 +3,9 @@ import { AuthService } from '@app/core/auth/auth.service';
 import { SupabaseService } from '@app/core/supabase/supabase.service';
 import type { AppRole } from '@app/core/auth/auth.types';
 import type {
-  ClientOption,
   CreateUserDto,
   ManagedUser,
+  OrganizationOption,
   RoleOption,
   UpdateUserDto,
 } from './users.types';
@@ -17,34 +17,34 @@ export class UsersService {
 
   private readonly _users = signal<ManagedUser[]>([]);
   private readonly _roles = signal<RoleOption[]>([]);
-  private readonly _clients = signal<ClientOption[]>([]);
+  private readonly _organizations = signal<OrganizationOption[]>([]);
   private readonly _loading = signal(false);
   private readonly _saving = signal(false);
 
   readonly users = this._users.asReadonly();
   readonly roles = this._roles.asReadonly();
-  readonly clients = this._clients.asReadonly();
+  readonly organizations = this._organizations.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly saving = this._saving.asReadonly();
 
   getAssignableRoles(): AppRole[] {
     if (this.auth.hasRole('super_admin')) {
-      return ['user', 'admin_client', 'super_admin'];
+      return ['user', 'organization_admin', 'super_admin'];
     }
-    return ['user', 'admin_client'];
+    return ['user', 'organization_admin'];
   }
 
-  resolveClientId(clientId: string | null): string | null {
+  resolveOrganizationId(organizationId: string | null): string | null {
     if (this.auth.hasRole('super_admin')) {
-      return clientId;
+      return organizationId;
     }
-    return this.auth.userProfile()?.client_id ?? null;
+    return this.auth.userProfile()?.organization_id ?? null;
   }
 
   async load(): Promise<void> {
     this._loading.set(true);
     try {
-      await Promise.all([this.loadRoles(), this.loadClients()]);
+      await Promise.all([this.loadRoles(), this.loadOrganizations()]);
 
       const { data: rawUsers, error: usersError } = await this.supabase
         .from('users')
@@ -73,7 +73,7 @@ export class UsersService {
           uid: user.uid ?? '',
           email: user.email ?? '',
           display_name: user.display_name,
-          client_id: user.client_id,
+          organization_id: user.organization_id,
           is_active: user.is_active ?? true,
           must_change_password: user.must_change_password ?? false,
           created_at: user.created_at ?? '',
@@ -105,32 +105,32 @@ export class UsersService {
     this._roles.set(options);
   }
 
-  async loadClients(): Promise<void> {
+  async loadOrganizations(): Promise<void> {
     if (!this.auth.hasRole('super_admin')) {
-      this._clients.set([]);
+      this._organizations.set([]);
       return;
     }
 
-    const { data, error } = await this.supabase.from('clients').select('id, name').order('name');
+    const { data, error } = await this.supabase.from('organizations').select('id, name').order('name');
 
     if (error) {
       throw error;
     }
 
-    const options: ClientOption[] = (data ?? [])
+    const options: OrganizationOption[] = (data ?? [])
       .filter((row) => row.id && row.name)
       .map((row) => ({
         id: row.id!,
         name: row.name!,
       }));
 
-    this._clients.set(options);
+    this._organizations.set(options);
   }
 
   async create(dto: CreateUserDto): Promise<void> {
     this._saving.set(true);
     try {
-      const clientId = this.resolveClientId(dto.client_id);
+      const organizationId = this.resolveOrganizationId(dto.organization_id);
 
       const { data, error } = await this.supabase.auth.signUp({
         email: dto.email,
@@ -138,7 +138,7 @@ export class UsersService {
         options: {
           data: {
             display_name: dto.display_name,
-            client_id: clientId,
+            organization_id: organizationId,
           },
         },
       });
@@ -158,7 +158,7 @@ export class UsersService {
         .from('users')
         .update({
           display_name: dto.display_name,
-          client_id: clientId,
+          organization_id: organizationId,
           is_active: dto.is_active,
           must_change_password: dto.must_change_password,
         })
@@ -178,13 +178,13 @@ export class UsersService {
   async update(uid: string, dto: UpdateUserDto): Promise<void> {
     this._saving.set(true);
     try {
-      const clientId = this.resolveClientId(dto.client_id);
+      const organizationId = this.resolveOrganizationId(dto.organization_id);
 
       const { error: userError } = await this.supabase
         .from('users')
         .update({
           display_name: dto.display_name || null,
-          client_id: clientId,
+          organization_id: organizationId,
           is_active: dto.is_active,
           must_change_password: dto.must_change_password,
         })

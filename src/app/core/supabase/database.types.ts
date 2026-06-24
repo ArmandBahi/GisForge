@@ -9,7 +9,42 @@ export type Json =
 export type Database = {
   administration: {
     Tables: {
-      client: {
+      group: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization: {
         Row: {
           created_at: string
           id: string
@@ -32,65 +67,6 @@ export type Database = {
           is_active?: boolean
           name?: string
           slug?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      group: {
-        Row: {
-          client_id: string
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          client_id: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          client_id?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "client"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      privilege: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
           updated_at?: string
         }
         Relationships: []
@@ -119,76 +95,46 @@ export type Database = {
         }
         Relationships: []
       }
-      role_privilege: {
-        Row: {
-          privilege_id: string
-          role_id: string
-        }
-        Insert: {
-          privilege_id: string
-          role_id: string
-        }
-        Update: {
-          privilege_id?: string
-          role_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "role_privilege_privilege_id_fkey"
-            columns: ["privilege_id"]
-            isOneToOne: false
-            referencedRelation: "privilege"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "role_privilege_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "role"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user: {
         Row: {
           avatar_url: string | null
-          client_id: string | null
           created_at: string
           display_name: string | null
           email: string
           is_active: boolean
           must_change_password: boolean
+          organization_id: string | null
           uid: string
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
-          client_id?: string | null
           created_at?: string
           display_name?: string | null
           email: string
           is_active?: boolean
           must_change_password?: boolean
+          organization_id?: string | null
           uid: string
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
-          client_id?: string | null
           created_at?: string
           display_name?: string | null
           email?: string
           is_active?: boolean
           must_change_password?: boolean
+          organization_id?: string | null
           uid?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "user_client_id_fkey"
-            columns: ["client_id"]
+            foreignKeyName: "user_organization_id_fkey"
+            columns: ["organization_id"]
             isOneToOne: false
-            referencedRelation: "client"
+            referencedRelation: "organization"
             referencedColumns: ["id"]
           },
         ]
@@ -258,10 +204,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      current_client_id: { Args: never; Returns: string }
-      has_any_privilege: { Args: { _privileges: string[] }; Returns: boolean }
-      has_privilege: { Args: { _privilege: string }; Returns: boolean }
+      current_organization_id: { Args: never; Returns: string }
       has_role: { Args: { _role: string }; Returns: boolean }
+      is_organization_admin: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
     }
     Enums: {
@@ -301,7 +246,42 @@ export type Database = {
       [_ in never]: never
     }
     Views: {
-      clients: {
+      groups: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string | null
+          name: string | null
+          organization_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          name?: string | null
+          organization_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          name?: string | null
+          organization_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
         Row: {
           created_at: string | null
           id: string | null
@@ -327,95 +307,6 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
-      }
-      groups: {
-        Row: {
-          client_id: string | null
-          created_at: string | null
-          description: string | null
-          id: string | null
-          name: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          client_id?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string | null
-          name?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          client_id?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string | null
-          name?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      privileges: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          id: string | null
-          name: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          id?: string | null
-          name?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: string | null
-          name?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      role_privileges: {
-        Row: {
-          privilege_id: string | null
-          role_id: string | null
-        }
-        Insert: {
-          privilege_id?: string | null
-          role_id?: string | null
-        }
-        Update: {
-          privilege_id?: string | null
-          role_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "role_privilege_privilege_id_fkey"
-            columns: ["privilege_id"]
-            isOneToOne: false
-            referencedRelation: "privileges"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "role_privilege_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "roles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       roles: {
         Row: {
@@ -504,43 +395,43 @@ export type Database = {
       users: {
         Row: {
           avatar_url: string | null
-          client_id: string | null
           created_at: string | null
           display_name: string | null
           email: string | null
           is_active: boolean | null
           must_change_password: boolean | null
+          organization_id: string | null
           uid: string | null
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
-          client_id?: string | null
           created_at?: string | null
           display_name?: string | null
           email?: string | null
           is_active?: boolean | null
           must_change_password?: boolean | null
+          organization_id?: string | null
           uid?: string | null
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
-          client_id?: string | null
           created_at?: string | null
           display_name?: string | null
           email?: string | null
           is_active?: boolean | null
           must_change_password?: boolean | null
+          organization_id?: string | null
           uid?: string | null
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "user_client_id_fkey"
-            columns: ["client_id"]
+            foreignKeyName: "user_organization_id_fkey"
+            columns: ["organization_id"]
             isOneToOne: false
-            referencedRelation: "clients"
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]

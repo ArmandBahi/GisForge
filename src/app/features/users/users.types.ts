@@ -4,7 +4,7 @@ export interface ManagedUser {
   uid: string;
   email: string;
   display_name: string | null;
-  client_id: string | null;
+  organization_id: string | null;
   is_active: boolean;
   must_change_password: boolean;
   created_at: string;
@@ -17,7 +17,7 @@ export interface RoleOption {
   description: string | null;
 }
 
-export interface ClientOption {
+export interface OrganizationOption {
   id: string;
   name: string;
 }
@@ -26,7 +26,7 @@ export interface CreateUserDto {
   email: string;
   password: string;
   display_name: string;
-  client_id: string | null;
+  organization_id: string | null;
   roles: AppRole[];
   is_active: boolean;
   must_change_password: boolean;
@@ -34,10 +34,10 @@ export interface CreateUserDto {
 
 export interface UpdateUserDto {
   display_name: string;
-  client_id: string | null;
+  organization_id: string | null;
   roles: AppRole[];
   is_active: boolean;
   must_change_password: boolean;
 }
 
-export const ASSIGNABLE_ROLES: AppRole[] = ['user', 'admin_client', 'super_admin'];
+export const ASSIGNABLE_ROLES: AppRole[] = ['user', 'organization_admin', 'super_admin'];

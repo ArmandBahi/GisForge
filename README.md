@@ -1,6 +1,6 @@
 # GisForge
 
-Boilerplate Angular « Custom Lovable » — génération rapide d'applications métier avec Cursor / Claude Code.
+Boilerplate Angular pour la génération rapide d'applications métier avec Cursor / Claude Code.
 
 ## Stack
 
@@ -19,7 +19,7 @@ Boilerplate Angular « Custom Lovable » — génération rapide d'applications 
 ```bash
 # Backend local
 npx supabase start
-npx supabase db reset   # migrations + seed (client démo)
+npx supabase db reset   # migrations + seed (organisation démo)
 
 # Types TypeScript depuis la DB locale
 npm run gen:types
@@ -71,16 +71,16 @@ Les valeurs de dev Angular sont dans `src/environments/environment.development.t
 
 ## Auth
 
-- `AuthService` (`core/auth/`) : session, profil, rôles (`super_admin`, `admin_client`, `user`), privilèges (`users_manage`, `groups_manage`)
-- Guards : `authGuard`, `guestGuard`, `roleGuard`, `privilegeGuard`
+- `AuthService` (`core/auth/`) : session, profil, rôles (`super_admin`, `organization_admin`, `user`)
+- Guards : `authGuard`, `guestGuard`, `roleGuard`
 - Routes protégées : layout + dashboard nécessitent une session active
 
 ## Gestion des utilisateurs
 
-- Route `/users` (lazy) protégée par `privilegeGuard(['users_manage'])` — accessible aux `super_admin` et `admin_client`
+- Route `/users` (lazy) protégée par `roleGuard(['super_admin', 'organization_admin'])`
 - `UsersService` + `users.page.ts` : liste, création (via `auth.signUp` + trigger), édition profil/rôles
-- Sidebar : lien « Utilisateurs » visible si `users_manage`
+- Sidebar : lien « Utilisateurs » visible pour `super_admin` et `organization_admin`
 
 ## Structure
 
-Voir [.cursor/custom-lovable.md](.cursor/custom-lovable.md) pour les conventions IA.
+Voir [.cursor/gis-forge.md](.cursor/gis-forge.md) pour les conventions IA.

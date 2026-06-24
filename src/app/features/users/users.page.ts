@@ -210,16 +210,16 @@ type DialogMode = 'create' | 'edit';
 
               @if (authService.hasRole('super_admin')) {
                 <div class="space-y-2">
-                  <label hlmLabel for="user-client">Client</label>
+                  <label hlmLabel for="user-organization">Organisation</label>
                   <select
-                    id="user-client"
-                    [(ngModel)]="formClientId"
-                    name="formClientId"
+                    id="user-organization"
+                    [(ngModel)]="formOrganizationId"
+                    name="formOrganizationId"
                     class="border-input bg-background flex h-9 w-full rounded-md border px-3 text-sm"
                   >
-                    <option value="">Aucun client</option>
-                    @for (client of usersService.clients(); track client.id) {
-                      <option [value]="client.id">{{ client.name }}</option>
+                    <option value="">Aucune organisation</option>
+                    @for (organization of usersService.organizations(); track organization.id) {
+                      <option [value]="organization.id">{{ organization.name }}</option>
                     }
                   </select>
                 </div>
@@ -288,7 +288,7 @@ export class UsersPage implements OnInit {
   formEmail = '';
   formPassword = '';
   formDisplayName = '';
-  formClientId = '';
+  formOrganizationId = '';
   formRoles: AppRole[] = [];
   formIsActive = true;
   formMustChangePassword = false;
@@ -337,7 +337,7 @@ export class UsersPage implements OnInit {
     this.formEmail = user.email;
     this.formPassword = '';
     this.formDisplayName = user.display_name ?? '';
-    this.formClientId = user.client_id ?? '';
+    this.formOrganizationId = user.organization_id ?? '';
     this.formRoles = [...user.roles];
     this.formIsActive = user.is_active;
     this.formMustChangePassword = user.must_change_password;
@@ -361,14 +361,14 @@ export class UsersPage implements OnInit {
     this.formEmail = '';
     this.formPassword = '';
     this.formDisplayName = '';
-    this.formClientId = this.authService.userProfile()?.client_id ?? '';
+    this.formOrganizationId = this.authService.userProfile()?.organization_id ?? '';
     this.formRoles = ['user'];
     this.formIsActive = true;
     this.formMustChangePassword = false;
   }
 
   async save() {
-    const clientId = this.formClientId || null;
+    const organizationId = this.formOrganizationId || null;
 
     try {
       if (this.dialogMode() === 'create') {
@@ -376,7 +376,7 @@ export class UsersPage implements OnInit {
           email: this.formEmail.trim(),
           password: this.formPassword,
           display_name: this.formDisplayName.trim(),
-          client_id: clientId,
+          organization_id: organizationId,
           roles: this.formRoles,
           is_active: this.formIsActive,
           must_change_password: this.formMustChangePassword,
@@ -389,7 +389,7 @@ export class UsersPage implements OnInit {
         }
         await this.usersService.update(user.uid, {
           display_name: this.formDisplayName.trim(),
-          client_id: clientId,
+          organization_id: organizationId,
           roles: this.formRoles,
           is_active: this.formIsActive,
           must_change_password: this.formMustChangePassword,

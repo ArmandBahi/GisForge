@@ -2,7 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import type { AuthSession, User } from '@supabase/supabase-js';
 import { SupabaseService } from '../supabase/supabase.service';
-import type { AppPrivilege, AppRole, UserProfile } from './auth.types';
+import type { AppRole, UserProfile } from './auth.types';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -18,7 +18,6 @@ export class AuthService {
   readonly user = signal<User | null>(null);
   readonly userProfile = signal<UserProfile | null>(null);
   readonly roles = signal<AppRole[]>([]);
-  readonly privileges = signal<AppPrivilege[]>([]);
   readonly loading = signal(true);
 
   readonly isAuthenticated = computed(() => !!this.session());
@@ -33,13 +32,6 @@ export class AuthService {
 
   hasRole(role: AppRole): boolean {
     return this.roles().includes(role);
-  }
-
-  hasPrivilege(privilege: AppPrivilege): boolean {
-    if (this.hasRole('super_admin')) {
-      return true;
-    }
-    return this.privileges().includes(privilege);
   }
 
   async signIn(email: string, password: string) {
@@ -116,7 +108,6 @@ export class AuthService {
     } else {
       this.userProfile.set(null);
       this.roles.set([]);
-      this.privileges.set([]);
     }
   }
 
@@ -155,37 +146,8 @@ export class AuthService {
         .filter((name): name is AppRole => !!name);
 
       this.roles.set(roleNames);
-
-      if (roleNames.includes('super_admin')) {
-        this.privileges.set(['users_manage', 'groups_manage']);
-        return;
-      }
-
-      const roleIds = (userRolesData ?? [])
-        .map((row) => row.roles?.id)
-        .filter((id): id is string => !!id);
-
-      if (roleIds.length === 0) {
-        this.privileges.set([]);
-        return;
-      }
-
-      const { data: rolePrivilegesData, error: privError } = await this.supabase
-        .from('role_privileges')
-        .select('privileges(name)')
-        .in('role_id', roleIds);
-
-      if (privError) {
-        throw privError;
-      }
-
-      const privilegeNames = (rolePrivilegesData ?? [])
-        .map((row) => row.privileges?.name)
-        .filter((name): name is AppPrivilege => !!name);
-
-      this.privileges.set([...new Set(privilegeNames)]);
     } catch (error) {
-      console.error('Error loading user profile & privileges:', error);
+      console.error('Error loading user profile & roles:', error);
     }
   }
 }

@@ -12,7 +12,7 @@ import { HlmLabelImports } from '@app/shared/ui/label';
       <div>
         <h1 class="text-2xl font-bold tracking-tight">GisForge</h1>
         <p class="text-muted-foreground text-sm mt-1">
-          Boilerplate Custom Lovable — Phase 1 (socle technique)
+          Forge your own GIS
         </p>
       </div>
 

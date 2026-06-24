@@ -1,14 +1,12 @@
-# Custom Lovable — base Angular pour le prompting IA
+# GisForge — conventions pour le prompting IA
 
-> Comment reconstruire l'expérience Lovable (génération rapide, stack prévisible, IA efficace) en Angular, optimisé pour Cursor / Claude Code.
+> Template Angular opinionated pour la génération rapide d'applications métier avec Cursor / Claude Code.
 
 ---
 
 ## Principe directeur
 
-Lovable ne gagne pas par une lib propriétaire. Il gagne par la **prévisibilité** : l'IA retrouve toujours la même structure, les mêmes conventions, le même vocabulaire UI.
-
-En Angular, l'objectif est identique :
+Le template gagne par la **prévisibilité** : l'IA retrouve toujours la même structure, les mêmes conventions, le même vocabulaire UI.
 
 ```
 Prompt IA  →  conventions fixes  →  code prévisible  →  peu de surprises
@@ -23,14 +21,14 @@ La base n'est pas un framework custom. C'est un **template opinionated** + des *
 | Couche | Choix | Pourquoi (pour l'IA) |
 |--------|-------|----------------------|
 | Framework | Angular 19+ (standalone) | Signals, `inject()`, lazy routes natives |
-| UI | **Spartan UI** (Helm + Brain) | Équivalent shadcn : code copié, Tailwind, même look que Lovable |
-| CSS | Tailwind v4 + variables CSS | Même système de thème que les projets React Lovable |
-| Backend | Supabase (Auth + Postgres + RLS) | Identique à Lovable, client JS compatible Angular |
-| Data | Services + signals
-| Routing | Angular Router + **lazy `loadComponent`** | Équivalent des modules lazy, évite le bundle 2,4 Mo |
-| Forms | Reactive Forms + Zod (via `@analogjs/zod` ou validation manuelle) | Pattern stable, bien documenté |
-| Toasts | ngx-sonner ou Spartan toast | Même UX que Sonner dans Lovable |
-| Icons | Lucide Angular (`lucide-angular`) | Cohérence visuelle avec les projets existants |
+| UI | **Spartan UI** (Helm + Brain) | Composants copiés, Tailwind, style shadcn |
+| CSS | Tailwind v4 + variables CSS | Thème cohérent via variables CSS |
+| Backend | Supabase (Auth + Postgres + RLS) | Auth + Postgres + RLS, client JS compatible Angular |
+| Data | Services + signals | État local réactif, pattern stable |
+| Routing | Angular Router + **lazy `loadComponent`** | Chunks par feature, bundle maîtrisé |
+| Forms | Reactive Forms + validation | Pattern stable, bien documenté |
+| Toasts | ngx-sonner ou Spartan toast | Feedback utilisateur uniforme |
+| Icons | Lucide Angular (`lucide-angular`) | Cohérence visuelle |
 | Build | Angular CLI + Vite (esbuild) | Rapide, standard |
 
 ---
@@ -38,7 +36,7 @@ La base n'est pas un framework custom. C'est un **template opinionated** + des *
 ## Structure du repo (le contrat avec l'IA)
 
 ```
-custom-lovable-app/
+gis-forge/
 ├── src/
 │   ├── app/
 │   │   ├── app.config.ts          # providers globaux
@@ -52,10 +50,10 @@ custom-lovable-app/
 │   │   │   │   ├── app-layout.component.ts
 │   │   │   │   └── app-sidebar.component.ts
 │   │   │   └── supabase/
-│   │   │       ├── supabase.client.ts
+│   │   │       ├── supabase.service.ts
 │   │   │       └── database.types.ts   # généré
 │   │   ├── shared/                  # UI Spartan + utilitaires
-│   │   │   ├── ui/                  # composants Helm copiés (comme shadcn)
+│   │   │   ├── ui/                  # composants Helm copiés
 │   │   │   └── utils/
 │   │   ├── features/                # 1 dossier = 1 domaine = 1 chunk lazy
 │   │   │   ├── dashboard/
@@ -74,19 +72,19 @@ custom-lovable-app/
 ├── supabase/
 │   ├── migrations/
 │   └── config.toml
-├── .cursor/rules/                   # règles Cursor (équivalent AGENTS.md)
-│   └── angular-lovable.mdc
+├── .cursor/rules/                   # règles Cursor
+│   └── angular-gisforge.mdc
 ├── AGENTS.md                          # instructions pour Claude Code / Cursor
 ├── components.json                    # config Spartan CLI
 └── scripts/
-    └── gen-supabase-types.ts
+    └── gen-supabase-types.mjs
 ```
 
 ### Règle d'or pour l'IA
 
 > **Une feature = un dossier = une route lazy = un service data.**
 
-L'IA sait toujours où créer du code. Pas de `pages/` plates avec 15 imports statiques dans `App.tsx` (erreur Lovable par défaut).
+L'IA sait toujours où créer du code. Pas de pages plates avec tous les imports statiques dans le routeur racine.
 
 ---
 
@@ -113,7 +111,7 @@ export const routes: Routes = [
 
 Chaque feature lourde (carte, calendrier, éditeur riche) a en plus un **lazy composant** interne si besoin.
 
-### 2. Couche data = services (équivalent `hooks.ts`)
+### 2. Couche data = services
 
 ```typescript
 // features/employees/employees.service.ts
@@ -159,18 +157,18 @@ export class EmployeesPage {
 }
 ```
 
-Même séparation que AssetWise : route → layout → vue → service.
+Même séparation : route → layout → vue → service.
 
-### 4. Auth + rôles (copie du modèle Supabase Lovable)
+### 4. Auth + rôles
 
-- Table `profiles` + `user_roles` + fonction `has_role()`
+- Schéma `administration` : organisations, users, roles, user_roles
 - `AuthService` avec signals : `user()`, `roles()`, `hasRole()`
-- Guards : `authGuard`, `roleGuard(['admin', 'manager'])`
+- Guards : `authGuard`, `roleGuard(['super_admin', 'organization_admin'])`
 - RLS côté Supabase (pas seulement côté UI)
 
 ### 5. CRUD référentiel (pattern le plus généré par l'IA)
 
-Pour tout écran type Employees / WBS Mappings :
+Pour tout écran type liste + formulaire :
 
 ```
 PageHeader (titre + boutons Add / Import)
@@ -185,18 +183,18 @@ Documenter ce pattern dans `AGENTS.md` pour que l'IA le réplique sans réinvent
 
 ---
 
-## Fichiers « auto-générés » (équivalent Lovable Cloud)
+## Fichiers générés
 
 | Fichier | Source | Règle |
 |---------|--------|-------|
 | `database.types.ts` | `supabase gen types` | Ne pas éditer à la main |
-| `supabase.client.ts` | template + env | Factory avec `inject(ENV)` |
+| `supabase.service.ts` | template + env | Factory avec `inject(ENV)` |
 | `.env` | local / CI | Jamais commité |
 
 Script npm :
 
 ```json
-"gen:types": "supabase gen types typescript --project-id $ID > src/app/core/supabase/database.types.ts"
+"gen:types": "supabase gen types typescript --local > src/app/core/supabase/database.types.ts"
 ```
 
 ---
@@ -206,14 +204,14 @@ Script npm :
 Fichier clé. Exemple de contenu :
 
 ```markdown
-# Custom Lovable — règles de génération
+# GisForge — règles de génération
 
 ## Stack
 Angular 19 standalone, Spartan UI, Tailwind, Supabase, signals.
 
 ## Structure
 - Nouvelle feature → dossier `features/<name>/` avec routes lazy, page, service, types
-- UI Spartan → `shared/ui/` via `npx spartan add <component>`
+- UI Spartan → `shared/ui/` via `npx @spartan-ng/cli add <component>`
 - Jamais d'appel Supabase dans un composant — toujours via un service
 
 ## Nommage
@@ -235,31 +233,21 @@ Angular 19 standalone, Spartan UI, Tailwind, Supabase, signals.
 
 ---
 
-## Ce qu'on reprend de Lovable (validé)
+## Principes du template
 
-| Lovable React | Custom Lovable Angular |
-|---------------|------------------------|
-| shadcn copié | Spartan Helm copié |
-| `integrations/supabase/` | `core/supabase/` |
-| `lib/hooks.ts` | `features/*/*.service.ts` |
-| `components/*-view.tsx` | `features/*/*.page.ts` + sous-composants |
-| React Query | signals + service (ou TanStack Angular Query) |
-| Sonner toasts | ngx-sonner |
-| `user_roles` + RLS | identique |
-| `exportable_tables` (backup) | identique |
-
-## Ce qu'on corrige par rapport à Lovable
-
-| Problème Lovable | Solution Custom Lovable |
-|------------------|-------------------------|
-| Pas de lazy routes | lazy `loadChildren` par feature dès le départ |
-| `hooks.ts` ou inline dispersé | 1 service par feature, toujours |
-| 46 composants UI dupliqués entre projets | package `shared-ui` en monorepo (optionnel phase 2) |
-| Bundle 2,4 Mo | chunks par feature + lazy des libs lourdes (leaflet, fullcalendar…) |
-| Garde auth répétée par route | guards centralisés |
+| Aspect | Approche GisForge |
+|--------|-------------------|
+| Composants UI | Spartan Helm copié dans `shared/ui/` |
+| Backend | `core/supabase/` + migrations |
+| État / data | `features/*/*.service.ts` avec signals |
+| Vues | `features/*/*.page.ts` + sous-composants |
+| Toasts | ngx-sonner |
+| Auth | organisations + rôles + RLS Supabase |
+| Routes | lazy `loadChildren` par feature dès le départ |
+| Data layer | 1 service par feature, toujours |
+| Bundle | chunks par feature + lazy des libs lourdes |
 
 ---
-
 
 ## Workflow de prompting
 
@@ -269,7 +257,7 @@ Angular 19 standalone, Spartan UI, Tailwind, Supabase, signals.
 2. **Modifier un écran** : « Sur employees, ajoute un filtre par département »
    → L'IA touche `employees.page.ts` + `employees.service.ts`, pas le layout
 
-3. **Nouveau composant UI** : `npx spartan add select` puis usage dans la feature
+3. **Nouveau composant UI** : `npx @spartan-ng/cli add select` puis usage dans la feature
 
 4. **Schéma DB** : migration SQL dans `supabase/migrations/` + `npm run gen:types`
 
@@ -277,4 +265,4 @@ Angular 19 standalone, Spartan UI, Tailwind, Supabase, signals.
 
 ## Résumé en une phrase
 
-**Custom Lovable Angular** = template Angular standalone + Spartan UI + Supabase + services/signals par feature + lazy routes + `AGENTS.md` — le même contrat de prévisibilité que Lovable, sans les défauts (bundle monolithique, data dispersée, pas de lazy loading).
+**GisForge** = template Angular standalone + Spartan UI + Supabase + services/signals par feature + lazy routes + `AGENTS.md` — un contrat de prévisibilité pour l'IA, avec bundle maîtrisé et data centralisée dans les services.

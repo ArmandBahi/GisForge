@@ -57,7 +57,7 @@ import { HlmButtonImports } from '@app/shared/ui/button';
         <svg lucideLayoutDashboard class="size-4"></svg>
         Dashboard
       </a>
-      @if (authService.hasPrivilege('users_manage')) {
+      @if (authService.hasRole('super_admin') || authService.hasRole('organization_admin')) {
         <a
           routerLink="/users"
           routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"

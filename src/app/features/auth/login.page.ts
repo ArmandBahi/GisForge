@@ -28,7 +28,7 @@ type AuthMode = 'signin' | 'signup' | 'reset';
             <svg lucideLayers class="size-8"></svg>
           </div>
           <h1 class="text-3xl font-bold tracking-tight">GisForge</h1>
-          <p class="text-muted-foreground text-sm">Boilerplate Custom Lovable — Greenvolt</p>
+          <p class="text-muted-foreground text-sm">Forge your own GIS</p>
         </div>
 
         <div class="rounded-lg border bg-card p-6 shadow-sm">
@@ -84,7 +84,7 @@ type AuthMode = 'signin' | 'signup' | 'reset';
                 type="email"
                 [(ngModel)]="email"
                 name="email"
-                placeholder="vous@greenvolt.fr"
+                placeholder="vous@example.com"
                 required
                 class="w-full"
               />
