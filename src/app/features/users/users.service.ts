@@ -215,25 +215,17 @@ export class UsersService {
   }
 
   async updateUserRoles(uid: string, roleNames: AppRole[]): Promise<void> {
-    const roleIds = this._roles()
-      .filter((role) => roleNames.includes(role.name))
-      .map((role) => role.id);
-
-    const { error: deleteError } = await this.supabase.from('user_roles').delete().eq('uid', uid);
-
-    if (deleteError) {
-      throw deleteError;
+    if (roleNames.length === 0) {
+      throw new Error('Au moins un rôle est requis.');
     }
 
-    if (roleIds.length === 0) {
-      return;
-    }
+    const { error } = await this.supabase.rpc('update_user_roles', {
+      p_uid: uid,
+      p_role_names: roleNames,
+    });
 
-    const rows = roleIds.map((roleId) => ({ uid, role_id: roleId }));
-    const { error: insertError } = await this.supabase.from('user_roles').insert(rows);
-
-    if (insertError) {
-      throw insertError;
+    if (error) {
+      throw error;
     }
   }
 }

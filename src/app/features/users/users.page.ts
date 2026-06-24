@@ -459,6 +459,11 @@ export class UsersPage implements OnInit {
   async save() {
     const organizationId = this.formOrganizationId || null;
 
+    if (this.formRoles.length === 0) {
+      toast.error('Sélectionnez au moins un rôle.');
+      return;
+    }
+
     try {
       if (this.dialogMode() === 'create') {
         await this.usersService.create({

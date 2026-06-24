@@ -96,6 +96,7 @@ PK composite `(uid, group_id)`.
 | `is_organization_admin()` | Raccourci pour `has_role('organization_admin')` |
 | `create_user(...)` | Création d'utilisateur par un admin (RPC, signup public désactivé) |
 | `delete_user(p_uid)` | Suppression d'utilisateur par un admin (RPC, supprime `auth.users`) |
+| `update_user_roles(p_uid, p_role_names)` | Mise à jour atomique des rôles (RPC, évite l'échec RLS lors de l'édition de son propre compte) |
 | `update_own_profile(p_display_name)` | Mise à jour du nom complet par l'utilisateur courant |
 | `clear_must_change_password()` | Réinitialise le flag après changement de mot de passe |
 
