@@ -18,10 +18,14 @@ export class AuthService {
   readonly user = signal<User | null>(null);
   readonly userProfile = signal<UserProfile | null>(null);
   readonly roles = signal<AppRole[]>([]);
+  readonly organizationActive = signal<boolean | null>(null);
   readonly loading = signal(true);
 
   readonly isAuthenticated = computed(() => !!this.session());
   readonly currentOrganizationId = computed(() => this.userProfile()?.organization_id ?? null);
+  readonly canAccessApp = computed(
+    () => this.isAuthenticated() && this.organizationActive() === true,
+  );
 
   constructor() {
     this.initializeAuth();
@@ -41,6 +45,17 @@ export class AuthService {
       password,
     });
     if (error) throw error;
+
+    if (data.user) {
+      await this.loadUserData(data.user.id);
+      if (!this.organizationActive()) {
+        await this.signOut();
+        throw new Error(
+          "L'organisation associée à votre compte est inactive. L'accès à l'application est refusé.",
+        );
+      }
+    }
+
     return data;
   }
 
@@ -76,7 +91,7 @@ export class AuthService {
 
         if (event === 'SIGNED_OUT') {
           this.router.navigate(['/login']);
-        } else if (event === 'SIGNED_IN' && this.router.url === '/login') {
+        } else if (event === 'SIGNED_IN' && this.router.url === '/login' && this.canAccessApp()) {
           this.router.navigate(['/']);
         }
       });
@@ -97,6 +112,7 @@ export class AuthService {
     } else {
       this.userProfile.set(null);
       this.roles.set([]);
+      this.organizationActive.set(null);
     }
   }
 
@@ -113,6 +129,7 @@ export class AuthService {
       }
 
       if (!profileData?.uid) {
+        this.organizationActive.set(null);
         if (!retry) {
           setTimeout(() => this.loadUserData(userId, true), 1000);
         }
@@ -120,6 +137,23 @@ export class AuthService {
       }
 
       this.userProfile.set(profileData as UserProfile);
+
+      const organizationId = profileData.organization_id;
+      if (!organizationId) {
+        this.organizationActive.set(false);
+      } else {
+        const { data: organization, error: organizationError } = await this.supabase
+          .from('organizations')
+          .select('is_active')
+          .eq('id', organizationId)
+          .maybeSingle();
+
+        if (organizationError) {
+          throw organizationError;
+        }
+
+        this.organizationActive.set(organization?.is_active ?? false);
+      }
 
       const { data: userRolesData, error: rolesError } = await this.supabase
         .from('user_roles')
@@ -136,6 +170,7 @@ export class AuthService {
 
       this.roles.set(roleNames);
     } catch (error) {
+      this.organizationActive.set(null);
       console.error('Error loading user profile & roles:', error);
     }
   }

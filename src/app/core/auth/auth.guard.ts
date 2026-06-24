@@ -9,11 +9,16 @@ export const authGuard: CanActivateFn = async () => {
 
   await authService.whenReady();
 
-  if (authService.isAuthenticated()) {
-    return true;
+  if (!authService.isAuthenticated()) {
+    return router.createUrlTree(['/login']);
   }
 
-  return router.createUrlTree(['/login']);
+  if (!authService.canAccessApp()) {
+    await authService.signOut();
+    return router.createUrlTree(['/login'], { queryParams: { error: 'organization_inactive' } });
+  }
+
+  return true;
 };
 
 export const guestGuard: CanActivateFn = async () => {
@@ -22,11 +27,11 @@ export const guestGuard: CanActivateFn = async () => {
 
   await authService.whenReady();
 
-  if (!authService.isAuthenticated()) {
-    return true;
+  if (authService.isAuthenticated() && authService.canAccessApp()) {
+    return router.createUrlTree(['/']);
   }
 
-  return router.createUrlTree(['/']);
+  return true;
 };
 
 export const roleGuard = (allowedRoles: AppRole[]): CanActivateFn => {
@@ -38,6 +43,11 @@ export const roleGuard = (allowedRoles: AppRole[]): CanActivateFn => {
 
     if (!authService.isAuthenticated()) {
       return router.createUrlTree(['/login']);
+    }
+
+    if (!authService.canAccessApp()) {
+      await authService.signOut();
+      return router.createUrlTree(['/login'], { queryParams: { error: 'organization_inactive' } });
     }
 
     const hasRole = allowedRoles.some((role) => authService.hasRole(role));

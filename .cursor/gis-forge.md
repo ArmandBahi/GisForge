@@ -167,6 +167,7 @@ Même séparation : route → layout → vue → service.
 - RLS côté Supabase (pas seulement côté UI)
 - Scoping org : tous les admins (y compris `super_admin`) voient users/groupes de leur org ; `super_admin` gère toutes les orgs via `/organizations`
 - Création utilisateur admin : RPC `create_user` (inscription publique désactivée)
+- Organisation inactive (`is_active = false`) : accès application bloqué (`canAccessApp`, guards)
 
 ### 5. CRUD référentiel (pattern le plus généré par l'IA)
 

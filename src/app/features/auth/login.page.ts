@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LucideLayers } from '@lucide/angular';
 import { toast } from 'ngx-sonner';
 import { AuthService } from '@app/core/auth/auth.service';
@@ -115,15 +115,31 @@ type AuthMode = 'signin' | 'reset';
     </div>
   `,
 })
-export class LoginPage {
+export class LoginPage implements OnInit {
   readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly mode = signal<AuthMode>('signin');
   readonly isLoading = signal(false);
 
   email = '';
   password = '';
+
+  ngOnInit() {
+    const error = this.route.snapshot.queryParamMap.get('error');
+    if (error === 'organization_inactive') {
+      toast.error(
+        "L'organisation associée à votre compte est inactive. L'accès à l'application est refusé.",
+      );
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { error: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    }
+  }
 
   setMode(newMode: AuthMode) {
     this.mode.set(newMode);
