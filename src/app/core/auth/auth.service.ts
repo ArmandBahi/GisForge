@@ -21,6 +21,7 @@ export class AuthService {
   readonly loading = signal(true);
 
   readonly isAuthenticated = computed(() => !!this.session());
+  readonly currentOrganizationId = computed(() => this.userProfile()?.organization_id ?? null);
 
   constructor() {
     this.initializeAuth();
@@ -38,18 +39,6 @@ export class AuthService {
     const { data, error } = await this.supabase.auth.signInWithPassword({
       email,
       password,
-    });
-    if (error) throw error;
-    return data;
-  }
-
-  async signUp(email: string, password: string, displayName: string) {
-    const { data, error } = await this.supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { display_name: displayName },
-      },
     });
     if (error) throw error;
     return data;

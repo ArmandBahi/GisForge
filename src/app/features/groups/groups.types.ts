@@ -22,13 +22,11 @@ export interface MemberOption {
 export interface CreateGroupDto {
   name: string;
   description: string | null;
-  organization_id: string | null;
   member_uids: string[];
 }
 
 export interface UpdateGroupDto {
   name: string;
   description: string | null;
-  organization_id: string | null;
   member_uids: string[];
 }

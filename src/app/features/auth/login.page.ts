@@ -8,7 +8,7 @@ import { HlmButtonImports } from '@app/shared/ui/button';
 import { HlmInputImports } from '@app/shared/ui/input';
 import { HlmLabelImports } from '@app/shared/ui/label';
 
-type AuthMode = 'signin' | 'signup' | 'reset';
+type AuthMode = 'signin' | 'reset';
 
 @Component({
   selector: 'app-login-page',
@@ -45,37 +45,9 @@ type AuthMode = 'signin' | 'signup' | 'reset';
             >
               Connexion
             </button>
-            <button
-              type="button"
-              (click)="setMode('signup')"
-              [class]="
-                mode() === 'signup'
-                  ? 'border-primary text-foreground'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              "
-              class="flex-1 pb-3 text-sm font-semibold border-b-2 text-center transition-colors"
-            >
-              Inscription
-            </button>
           </div>
 
           <form (ngSubmit)="handleSubmit()" class="space-y-4">
-            @if (mode() === 'signup') {
-              <div class="space-y-2">
-                <label hlmLabel for="displayName">Nom complet</label>
-                <input
-                  hlmInput
-                  id="displayName"
-                  type="text"
-                  [(ngModel)]="displayName"
-                  name="displayName"
-                  placeholder="Jean Dupont"
-                  required
-                  class="w-full"
-                />
-              </div>
-            }
-
             <div class="space-y-2">
               <label hlmLabel for="email">Adresse email</label>
               <input
@@ -152,7 +124,6 @@ export class LoginPage {
 
   email = '';
   password = '';
-  displayName = '';
 
   setMode(newMode: AuthMode) {
     this.mode.set(newMode);
@@ -162,8 +133,6 @@ export class LoginPage {
     switch (this.mode()) {
       case 'signin':
         return this.isLoading() ? 'Connexion…' : 'Se connecter';
-      case 'signup':
-        return this.isLoading() ? 'Inscription…' : "S'inscrire";
       case 'reset':
         return this.isLoading() ? 'Envoi…' : 'Envoyer le lien de réinitialisation';
     }
@@ -186,14 +155,6 @@ export class LoginPage {
         await this.authService.signIn(this.email, this.password);
         toast.success('Connexion réussie !');
         this.router.navigate(['/']);
-      } else if (this.mode() === 'signup') {
-        if (!this.displayName) {
-          toast.error('Veuillez renseigner votre nom.');
-          return;
-        }
-        await this.authService.signUp(this.email, this.password, this.displayName);
-        toast.success('Inscription réussie ! Vérifiez votre email si la confirmation est activée.');
-        this.setMode('signin');
       } else {
         await this.authService.resetPassword(this.email);
         toast.success('Un email de réinitialisation vous a été envoyé.');

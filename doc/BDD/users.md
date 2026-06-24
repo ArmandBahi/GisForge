@@ -1,8 +1,8 @@
 # Administration — modèle de données
 
-> Multi-tenant : chaque utilisateur appartient à une **organisation**.  
-> Les `organization_admin` gèrent les utilisateurs et groupes de leur organisation.  
-> Les `super_admin` ont un accès plateforme complet.
+> Multi-tenant : chaque utilisateur appartient à une **organisation** (obligatoire).  
+> Tous les rôles admin voient uniquement les users et groupes de leur organisation, y compris `super_admin`.  
+> Le `super_admin` gère en plus toutes les organisations (CRUD plateforme) et peut réassigner l'organisation d'un utilisateur.
 
 ---
 
@@ -30,7 +30,7 @@ Profil applicatif lié à `auth.users`.
 | `email` | `text` | NOT NULL |
 | `display_name` | `text` | |
 | `avatar_url` | `text` | |
-| `organization_id` | `uuid` | FK → `organization(id)` SET NULL — nullable pour les super_admin non rattachés |
+| `organization_id` | `uuid` | FK → `organization(id)` RESTRICT, NOT NULL |
 | `is_active` | `boolean` | défaut `true` |
 | `must_change_password` | `boolean` | défaut `false` |
 | `created_at`, `updated_at` | `timestamptz` | |
@@ -94,6 +94,7 @@ PK composite `(uid, group_id)`.
 | `has_role(_role)` | Vérifie si l'utilisateur courant possède un rôle donné |
 | `is_super_admin()` | Raccourci pour `has_role('super_admin')` |
 | `is_organization_admin()` | Raccourci pour `has_role('organization_admin')` |
+| `create_user(...)` | Création d'utilisateur par un admin (RPC, signup public désactivé) |
 
 ---
 
@@ -101,12 +102,12 @@ PK composite `(uid, group_id)`.
 
 | Table | SELECT | INSERT / UPDATE / DELETE |
 |-------|--------|--------------------------|
-| `organization` | Sa propre organisation OU super_admin | super_admin uniquement |
-| `user` | Soi-même, OU users de son org (si `organization_admin`), OU super_admin | `organization_admin` scopé org, OU super_admin |
+| `organization` | Sa propre organisation OU super_admin (toutes) | super_admin uniquement (CRUD global) |
+| `user` | Soi-même, OU users de son org (admin) | Admin scopé org ; super_admin peut créer/réassigner vers n'importe quelle org |
 | `role` | Tout utilisateur authentifié | super_admin uniquement |
-| `user_role` | Ses propres rôles, OU rôles des users de son org (si `organization_admin`), OU super_admin | `organization_admin` scopé org, OU super_admin |
-| `group` | Groupes de son org, OU super_admin | `organization_admin` scopé org, OU super_admin |
-| `user_group` | Ses propres groupes, OU groupes de son org, OU super_admin | `organization_admin` scopé org, OU super_admin |
+| `user_role` | Ses propres rôles, OU rôles des users de son org (admin) | Admin scopé org |
+| `group` | Groupes de son org | Admin scopé org |
+| `user_group` | Ses propres groupes, OU groupes de son org (admin) | Admin scopé org |
 
 ---
 

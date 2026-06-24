@@ -27,19 +27,29 @@ C'est ici qu'on valide le "CRUD pattern" qui servira d'exemple à l'IA pour tout
 
 ## Phase 3.1 : gestion organisation
 
-Il y a mésentente sur les attentes de la gestion par organisation.
+~~Il y a mésentente sur les attentes de la gestion par organisation.~~
 
-- Chaque utilisateur est associé à une organisation et ne voit que les données de cette organisation y compris utilisateurs, groupes. Cela marche aussi pour les super-admin.
-- Un menu permet l'administration des organisations (uniquement un super-admin peut y accéder).
-- Un menu permet de visualier "Mon organisation".
-- désactivons la fonctionnalité d'inscription pour l'instant.
-- Seul un super-admin peut changer l'organisation d'un utilisateur
+- ~~Chaque utilisateur est associé à une organisation (obligatoire) et ne voit que les données de cette organisation y compris utilisateurs, groupes. Cela marche aussi pour les super-admin.~~
+- ~~Un menu permet l'administration des organisations (uniquement un super-admin peut y accéder).~~
+- ~~Un menu permet de visualier "Mon organisation".~~
+- ~~désactivons la fonctionnalité d'inscription pour l'instant.~~
+- ~~Seul un super-admin peut changer l'organisation d'un utilisateur~~
+- ~~à l'initialisation de l'application on crée un utilisateur super-admin avec l'organisation "default" login "admin" et un mot de passe "123456".~~
 
 
 ## Phase 3.2 : corrections diverses
 
+- Si une organisation n'est pas active, il faut bloquer l'accès à l'application.
+- Il y a un problème sur l'entête des modales : si j'ajoute une organisation il y a écrit `{{ dialogMode() === 'create' ? 'Nouvelle organisation' : 'Modifier l'organisation' }}`
+- Pas de suppression d'utilisateur
+- Manque un menu "Mon profil" où l'utilisateur peut modifier son nom complet, et son mot de passe.
+
+
+## Phase 3.3 : corrections diverses
+
 - Quand je crée un utilisateur depuis l'espace d'administration, je me retrouve ensuite loggé sur ce dernier. Il ne faut pas.
-- Les menus concernant la gestion des comptes (utilisateurs groupes, etc) 
+- Les menus concernant la gestion (organisations,utilisateurs groupes, etc) doivent être placés en bas de la sidebar.
+- Si je modifie les roles de mon propre compte ça génère une erreur et je me retrouve avec plus aucun droit
 
 
 ## Phase 4 : Documentation & Standardisation IA

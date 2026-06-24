@@ -103,7 +103,7 @@ export type Database = {
           email: string
           is_active: boolean
           must_change_password: boolean
-          organization_id: string | null
+          organization_id: string
           uid: string
           updated_at: string
         }
@@ -114,7 +114,7 @@ export type Database = {
           email: string
           is_active?: boolean
           must_change_password?: boolean
-          organization_id?: string | null
+          organization_id: string
           uid: string
           updated_at?: string
         }
@@ -125,7 +125,7 @@ export type Database = {
           email?: string
           is_active?: boolean
           must_change_password?: boolean
-          organization_id?: string | null
+          organization_id?: string
           uid?: string
           updated_at?: string
         }
@@ -438,7 +438,18 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      create_user: {
+        Args: {
+          p_display_name: string
+          p_email: string
+          p_is_active?: boolean
+          p_must_change_password?: boolean
+          p_organization_id: string
+          p_password: string
+          p_role_names?: string[]
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

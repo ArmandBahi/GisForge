@@ -131,44 +131,28 @@ export class UsersService {
     this._saving.set(true);
     try {
       const organizationId = this.resolveOrganizationId(dto.organization_id);
+      if (!organizationId) {
+        throw new Error('Une organisation est requise pour créer un utilisateur.');
+      }
 
-      const { data, error } = await this.supabase.auth.signUp({
-        email: dto.email,
-        password: dto.password,
-        options: {
-          data: {
-            display_name: dto.display_name,
-            organization_id: organizationId,
-          },
-        },
+      const { data: uid, error } = await this.supabase.rpc('create_user', {
+        p_email: dto.email,
+        p_password: dto.password,
+        p_display_name: dto.display_name,
+        p_organization_id: organizationId,
+        p_is_active: dto.is_active,
+        p_must_change_password: dto.must_change_password,
+        p_role_names: dto.roles,
       });
 
       if (error) {
         throw error;
       }
 
-      const uid = data.user?.id;
       if (!uid) {
         throw new Error('Utilisateur créé mais identifiant introuvable.');
       }
 
-      await this.waitForProfile(uid);
-
-      const { error: updateError } = await this.supabase
-        .from('users')
-        .update({
-          display_name: dto.display_name,
-          organization_id: organizationId,
-          is_active: dto.is_active,
-          must_change_password: dto.must_change_password,
-        })
-        .eq('uid', uid);
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      await this.updateUserRoles(uid, dto.roles);
       await this.load();
     } finally {
       this._saving.set(false);
@@ -178,17 +162,22 @@ export class UsersService {
   async update(uid: string, dto: UpdateUserDto): Promise<void> {
     this._saving.set(true);
     try {
-      const organizationId = this.resolveOrganizationId(dto.organization_id);
+      const updatePayload: {
+        display_name: string | null;
+        is_active: boolean;
+        must_change_password: boolean;
+        organization_id?: string | null;
+      } = {
+        display_name: dto.display_name || null,
+        is_active: dto.is_active,
+        must_change_password: dto.must_change_password,
+      };
 
-      const { error: userError } = await this.supabase
-        .from('users')
-        .update({
-          display_name: dto.display_name || null,
-          organization_id: organizationId,
-          is_active: dto.is_active,
-          must_change_password: dto.must_change_password,
-        })
-        .eq('uid', uid);
+      if (this.auth.hasRole('super_admin') && dto.organization_id !== undefined) {
+        updatePayload.organization_id = this.resolveOrganizationId(dto.organization_id);
+      }
+
+      const { error: userError } = await this.supabase.from('users').update(updatePayload).eq('uid', uid);
 
       if (userError) {
         throw userError;
@@ -227,23 +216,5 @@ export class UsersService {
     if (insertError) {
       throw insertError;
     }
-  }
-
-  private async waitForProfile(uid: string, attempts = 5): Promise<void> {
-    for (let i = 0; i < attempts; i++) {
-      const { data, error } = await this.supabase.from('users').select('uid').eq('uid', uid).maybeSingle();
-
-      if (error) {
-        throw error;
-      }
-
-      if (data?.uid) {
-        return;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 300));
-    }
-
-    throw new Error('Profil utilisateur non créé après inscription.');
   }
 }

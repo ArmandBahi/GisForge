@@ -25,7 +25,7 @@ CREATE TABLE administration.user (
   email                TEXT NOT NULL,
   display_name         TEXT,
   avatar_url           TEXT,
-  organization_id      UUID REFERENCES administration.organization(id) ON DELETE SET NULL,
+  organization_id      UUID NOT NULL REFERENCES administration.organization(id) ON DELETE RESTRICT,
   is_active            BOOLEAN NOT NULL DEFAULT true,
   must_change_password BOOLEAN NOT NULL DEFAULT false,
   created_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -154,20 +154,38 @@ CREATE POLICY organization_manage ON administration.organization
 CREATE POLICY user_select ON administration.user
   FOR SELECT USING (
     auth.uid() = uid
-    OR administration.is_super_admin()
+    OR (
+      (administration.is_super_admin() OR administration.is_organization_admin())
+      AND organization_id = administration.current_organization_id()
+    )
+  );
+
+CREATE POLICY user_insert ON administration.user
+  FOR INSERT WITH CHECK (
+    administration.is_super_admin()
     OR (
       administration.is_organization_admin()
       AND organization_id = administration.current_organization_id()
     )
   );
 
-CREATE POLICY user_manage ON administration.user
-  FOR ALL USING (
+CREATE POLICY user_update ON administration.user
+  FOR UPDATE USING (
+    (administration.is_super_admin() OR administration.is_organization_admin())
+    AND organization_id = administration.current_organization_id()
+  )
+  WITH CHECK (
     administration.is_super_admin()
     OR (
       administration.is_organization_admin()
       AND organization_id = administration.current_organization_id()
     )
+  );
+
+CREATE POLICY user_delete ON administration.user
+  FOR DELETE USING (
+    (administration.is_super_admin() OR administration.is_organization_admin())
+    AND organization_id = administration.current_organization_id()
   );
 
 -- ---- role (reference data) ----
@@ -181,7 +199,18 @@ CREATE POLICY role_manage ON administration.role
 CREATE POLICY user_role_select ON administration.user_role
   FOR SELECT USING (
     auth.uid() = uid
-    OR administration.is_super_admin()
+    OR (
+      (administration.is_super_admin() OR administration.is_organization_admin())
+      AND uid IN (
+        SELECT u.uid FROM administration.user u
+        WHERE u.organization_id = administration.current_organization_id()
+      )
+    )
+  );
+
+CREATE POLICY user_role_insert ON administration.user_role
+  FOR INSERT WITH CHECK (
+    administration.is_super_admin()
     OR (
       administration.is_organization_admin()
       AND uid IN (
@@ -191,8 +220,15 @@ CREATE POLICY user_role_select ON administration.user_role
     )
   );
 
-CREATE POLICY user_role_manage ON administration.user_role
-  FOR ALL USING (
+CREATE POLICY user_role_update ON administration.user_role
+  FOR UPDATE USING (
+    (administration.is_super_admin() OR administration.is_organization_admin())
+    AND uid IN (
+      SELECT u.uid FROM administration.user u
+      WHERE u.organization_id = administration.current_organization_id()
+    )
+  )
+  WITH CHECK (
     administration.is_super_admin()
     OR (
       administration.is_organization_admin()
@@ -200,45 +236,88 @@ CREATE POLICY user_role_manage ON administration.user_role
         SELECT u.uid FROM administration.user u
         WHERE u.organization_id = administration.current_organization_id()
       )
+    )
+  );
+
+CREATE POLICY user_role_delete ON administration.user_role
+  FOR DELETE USING (
+    (administration.is_super_admin() OR administration.is_organization_admin())
+    AND uid IN (
+      SELECT u.uid FROM administration.user u
+      WHERE u.organization_id = administration.current_organization_id()
     )
   );
 
 -- ---- group (scoped by organization) ----
 CREATE POLICY group_select ON administration.group
   FOR SELECT USING (
-    administration.is_super_admin()
-    OR organization_id = administration.current_organization_id()
+    organization_id = administration.current_organization_id()
   );
 
-CREATE POLICY group_manage ON administration.group
-  FOR ALL USING (
-    administration.is_super_admin()
-    OR (
-      administration.is_organization_admin()
-      AND organization_id = administration.current_organization_id()
-    )
+CREATE POLICY group_insert ON administration.group
+  FOR INSERT WITH CHECK (
+    (administration.is_super_admin() OR administration.is_organization_admin())
+    AND organization_id = administration.current_organization_id()
+  );
+
+CREATE POLICY group_update ON administration.group
+  FOR UPDATE USING (
+    (administration.is_super_admin() OR administration.is_organization_admin())
+    AND organization_id = administration.current_organization_id()
+  )
+  WITH CHECK (
+    (administration.is_super_admin() OR administration.is_organization_admin())
+    AND organization_id = administration.current_organization_id()
+  );
+
+CREATE POLICY group_delete ON administration.group
+  FOR DELETE USING (
+    (administration.is_super_admin() OR administration.is_organization_admin())
+    AND organization_id = administration.current_organization_id()
   );
 
 -- ---- user_group ----
 CREATE POLICY user_group_select ON administration.user_group
   FOR SELECT USING (
     auth.uid() = uid
-    OR administration.is_super_admin()
     OR EXISTS (
+      SELECT 1 FROM administration.group g
+      WHERE g.id = group_id AND g.organization_id = administration.current_organization_id()
+      AND (administration.is_super_admin() OR administration.is_organization_admin())
+    )
+  );
+
+CREATE POLICY user_group_insert ON administration.user_group
+  FOR INSERT WITH CHECK (
+    (administration.is_super_admin() OR administration.is_organization_admin())
+    AND EXISTS (
       SELECT 1 FROM administration.group g
       WHERE g.id = group_id AND g.organization_id = administration.current_organization_id()
     )
   );
 
-CREATE POLICY user_group_manage ON administration.user_group
-  FOR ALL USING (
-    administration.is_super_admin()
-    OR (
-      administration.is_organization_admin()
-      AND EXISTS (
-        SELECT 1 FROM administration.group g
-        WHERE g.id = group_id AND g.organization_id = administration.current_organization_id()
-      )
+CREATE POLICY user_group_update ON administration.user_group
+  FOR UPDATE USING (
+    (administration.is_super_admin() OR administration.is_organization_admin())
+    AND EXISTS (
+      SELECT 1 FROM administration.group g
+      WHERE g.id = group_id AND g.organization_id = administration.current_organization_id()
+    )
+  )
+  WITH CHECK (
+    (administration.is_super_admin() OR administration.is_organization_admin())
+    AND EXISTS (
+      SELECT 1 FROM administration.group g
+      WHERE g.id = group_id AND g.organization_id = administration.current_organization_id()
+    )
+  );
+
+CREATE POLICY user_group_delete ON administration.user_group
+  FOR DELETE USING (
+    (administration.is_super_admin() OR administration.is_organization_admin())
+    AND EXISTS (
+      SELECT 1 FROM administration.group g
+      WHERE g.id = group_id AND g.organization_id = administration.current_organization_id()
     )
   );
 
@@ -315,7 +394,7 @@ CREATE OR REPLACE VIEW public.user_groups WITH (security_invoker = true) AS
 -- ==========================================
 
 INSERT INTO administration.role (name, description) VALUES
-  ('super_admin',        'Platform administrator — full access across all organizations'),
+  ('super_admin',        'Platform administrator — manages organizations; data scoped to own organization'),
   ('organization_admin', 'Organization administrator — manages users, groups, and settings within their organization'),
   ('user',               'Standard user')
 ON CONFLICT (name) DO NOTHING;

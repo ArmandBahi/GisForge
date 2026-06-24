@@ -28,6 +28,17 @@ export const routes: Routes = [
         canActivate: [roleGuard(['super_admin', 'organization_admin'])],
         loadChildren: () => import('./features/groups/groups.routes').then((m) => m.GROUPS_ROUTES),
       },
+      {
+        path: 'organizations',
+        canActivate: [roleGuard(['super_admin'])],
+        loadChildren: () =>
+          import('./features/organizations/organizations.routes').then((m) => m.ORGANIZATIONS_ROUTES),
+      },
+      {
+        path: 'my-organization',
+        loadComponent: () =>
+          import('./features/organizations/my-organization.page').then((m) => m.MyOrganizationPage),
+      },
     ],
   },
   {

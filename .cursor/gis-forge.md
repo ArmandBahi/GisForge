@@ -161,10 +161,12 @@ Même séparation : route → layout → vue → service.
 
 ### 4. Auth + rôles
 
-- Schéma `administration` : organisations, users, roles, user_roles
-- `AuthService` avec signals : `user()`, `roles()`, `hasRole()`
+- Schéma `administration` : organisations, users, roles, user_roles, groups
+- `AuthService` avec signals : `user()`, `roles()`, `hasRole()`, `currentOrganizationId()`
 - Guards : `authGuard`, `roleGuard(['super_admin', 'organization_admin'])`
 - RLS côté Supabase (pas seulement côté UI)
+- Scoping org : tous les admins (y compris `super_admin`) voient users/groupes de leur org ; `super_admin` gère toutes les orgs via `/organizations`
+- Création utilisateur admin : RPC `create_user` (inscription publique désactivée)
 
 ### 5. CRUD référentiel (pattern le plus généré par l'IA)
 

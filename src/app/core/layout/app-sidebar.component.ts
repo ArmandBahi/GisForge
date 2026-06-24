@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
+  LucideBuilding2,
   LucideFolder,
   LucideLayoutDashboard,
   LucideLayers,
@@ -18,6 +19,7 @@ import { HlmButtonImports } from '@app/shared/ui/button';
   imports: [
     RouterLink,
     RouterLinkActive,
+    LucideBuilding2,
     LucideFolder,
     LucideLayoutDashboard,
     LucideLayers,
@@ -59,6 +61,26 @@ import { HlmButtonImports } from '@app/shared/ui/button';
         <svg lucideLayoutDashboard class="size-4"></svg>
         Dashboard
       </a>
+      <a
+        routerLink="/my-organization"
+        routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
+        class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        (click)="navigate.emit()"
+      >
+        <svg lucideBuilding2 class="size-4"></svg>
+        Mon organisation
+      </a>
+      @if (authService.hasRole('super_admin')) {
+        <a
+          routerLink="/organizations"
+          routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
+          class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          (click)="navigate.emit()"
+        >
+          <svg lucideBuilding2 class="size-4"></svg>
+          Organisations
+        </a>
+      }
       @if (authService.hasRole('super_admin') || authService.hasRole('organization_admin')) {
         <a
           routerLink="/users"

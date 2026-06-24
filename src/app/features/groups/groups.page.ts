@@ -10,7 +10,6 @@ import {
 } from '@lucide/angular';
 import { BrnDialogContent } from '@spartan-ng/brain/dialog';
 import { toast } from 'ngx-sonner';
-import { AuthService } from '@app/core/auth/auth.service';
 import { HlmButtonImports } from '@app/shared/ui/button';
 import { HlmDialogImports } from '@app/shared/ui/dialog';
 import { HlmInputImports } from '@app/shared/ui/input';
@@ -192,24 +191,6 @@ type DialogMode = 'create' | 'edit';
                 />
               </div>
 
-              @if (authService.hasRole('super_admin')) {
-                <div class="space-y-2">
-                  <label hlmLabel for="group-organization">Organisation</label>
-                  <select
-                    id="group-organization"
-                    [(ngModel)]="formOrganizationId"
-                    name="formOrganizationId"
-                    (ngModelChange)="onOrganizationChange($event)"
-                    class="border-input bg-background flex h-9 w-full rounded-md border px-3 text-sm"
-                  >
-                    <option value="">Sélectionner une organisation</option>
-                    @for (organization of groupsService.organizations(); track organization.id) {
-                      <option [value]="organization.id">{{ organization.name }}</option>
-                    }
-                  </select>
-                </div>
-              }
-
               <div class="space-y-2">
                 <span hlmLabel>Membres</span>
                 @if (groupsService.members().length === 0) {
@@ -265,7 +246,6 @@ type DialogMode = 'create' | 'edit';
 })
 export class GroupsPage implements OnInit {
   readonly groupsService = inject(GroupsService);
-  readonly authService = inject(AuthService);
 
   readonly dialogMode = signal<DialogMode>('create');
   readonly dialogState = signal<'open' | 'closed'>('closed');
@@ -274,7 +254,6 @@ export class GroupsPage implements OnInit {
   searchQuery = '';
   formName = '';
   formDescription = '';
-  formOrganizationId = '';
   formMemberUids: string[] = [];
 
   readonly filteredGroups = computed(() => {
@@ -316,7 +295,6 @@ export class GroupsPage implements OnInit {
     this.editingGroup.set(group);
     this.formName = group.name;
     this.formDescription = group.description ?? '';
-    this.formOrganizationId = group.organization_id;
     this.formMemberUids = [...group.member_uids];
     await this.loadMembersForForm();
     this.dialogState.set('open');
@@ -330,19 +308,12 @@ export class GroupsPage implements OnInit {
   resetForm() {
     this.formName = '';
     this.formDescription = '';
-    this.formOrganizationId = this.authService.userProfile()?.organization_id ?? '';
     this.formMemberUids = [];
-  }
-
-  async onOrganizationChange(organizationId: string) {
-    this.formOrganizationId = organizationId;
-    this.formMemberUids = [];
-    await this.loadMembersForForm();
   }
 
   async loadMembersForForm() {
     try {
-      await this.groupsService.loadMembers(this.formOrganizationId || null);
+      await this.groupsService.loadMembers();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Erreur lors du chargement des membres.';
       toast.error(message);
@@ -358,7 +329,6 @@ export class GroupsPage implements OnInit {
   }
 
   async save() {
-    const organizationId = this.formOrganizationId || null;
     const description = this.formDescription.trim() || null;
 
     try {
@@ -366,7 +336,6 @@ export class GroupsPage implements OnInit {
         await this.groupsService.create({
           name: this.formName.trim(),
           description,
-          organization_id: organizationId,
           member_uids: this.formMemberUids,
         });
         toast.success('Groupe créé avec succès.');
@@ -378,7 +347,6 @@ export class GroupsPage implements OnInit {
         await this.groupsService.update(group.id, {
           name: this.formName.trim(),
           description,
-          organization_id: organizationId,
           member_uids: this.formMemberUids,
         });
         toast.success('Groupe mis à jour.');

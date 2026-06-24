@@ -1,13 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { AuthService } from '@app/core/auth/auth.service';
 import { SupabaseService } from '@app/core/supabase/supabase.service';
-import type {
-  CreateGroupDto,
-  ManagedGroup,
-  MemberOption,
-  OrganizationOption,
-  UpdateGroupDto,
-} from './groups.types';
+import type { CreateGroupDto, ManagedGroup, MemberOption, UpdateGroupDto } from './groups.types';
 
 @Injectable({ providedIn: 'root' })
 export class GroupsService {
@@ -15,29 +9,22 @@ export class GroupsService {
   private readonly auth = inject(AuthService);
 
   private readonly _groups = signal<ManagedGroup[]>([]);
-  private readonly _organizations = signal<OrganizationOption[]>([]);
   private readonly _members = signal<MemberOption[]>([]);
   private readonly _loading = signal(false);
   private readonly _saving = signal(false);
 
   readonly groups = this._groups.asReadonly();
-  readonly organizations = this._organizations.asReadonly();
   readonly members = this._members.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly saving = this._saving.asReadonly();
 
-  resolveOrganizationId(organizationId: string | null): string | null {
-    if (this.auth.hasRole('super_admin')) {
-      return organizationId;
-    }
+  resolveOrganizationId(): string | null {
     return this.auth.userProfile()?.organization_id ?? null;
   }
 
   async load(): Promise<void> {
     this._loading.set(true);
     try {
-      await this.loadOrganizations();
-
       const [groupsResult, userGroupsResult] = await Promise.all([
         this.supabase.from('groups').select('*').order('created_at', { ascending: false }),
         this.supabase.from('user_groups').select('group_id, uid'),
@@ -81,30 +68,8 @@ export class GroupsService {
     }
   }
 
-  async loadOrganizations(): Promise<void> {
-    if (!this.auth.hasRole('super_admin')) {
-      this._organizations.set([]);
-      return;
-    }
-
-    const { data, error } = await this.supabase.from('organizations').select('id, name').order('name');
-
-    if (error) {
-      throw error;
-    }
-
-    const options: OrganizationOption[] = (data ?? [])
-      .filter((row) => row.id && row.name)
-      .map((row) => ({
-        id: row.id!,
-        name: row.name!,
-      }));
-
-    this._organizations.set(options);
-  }
-
-  async loadMembers(organizationId: string | null): Promise<void> {
-    const resolvedId = this.resolveOrganizationId(organizationId);
+  async loadMembers(): Promise<void> {
+    const resolvedId = this.resolveOrganizationId();
     if (!resolvedId) {
       this._members.set([]);
       return;
@@ -134,7 +99,7 @@ export class GroupsService {
   async create(dto: CreateGroupDto): Promise<void> {
     this._saving.set(true);
     try {
-      const organizationId = this.resolveOrganizationId(dto.organization_id);
+      const organizationId = this.resolveOrganizationId();
       if (!organizationId) {
         throw new Error('Une organisation est requise pour créer un groupe.');
       }
@@ -168,17 +133,11 @@ export class GroupsService {
   async update(id: string, dto: UpdateGroupDto): Promise<void> {
     this._saving.set(true);
     try {
-      const organizationId = this.resolveOrganizationId(dto.organization_id);
-      if (!organizationId) {
-        throw new Error('Une organisation est requise.');
-      }
-
       const { error } = await this.supabase
         .from('groups')
         .update({
           name: dto.name,
           description: dto.description,
-          organization_id: organizationId,
         })
         .eq('id', id);
 

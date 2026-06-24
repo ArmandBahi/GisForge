@@ -217,7 +217,6 @@ type DialogMode = 'create' | 'edit';
                     name="formOrganizationId"
                     class="border-input bg-background flex h-9 w-full rounded-md border px-3 text-sm"
                   >
-                    <option value="">Aucune organisation</option>
                     @for (organization of usersService.organizations(); track organization.id) {
                       <option [value]="organization.id">{{ organization.name }}</option>
                     }
@@ -389,7 +388,9 @@ export class UsersPage implements OnInit {
         }
         await this.usersService.update(user.uid, {
           display_name: this.formDisplayName.trim(),
-          organization_id: organizationId,
+          ...(this.authService.hasRole('super_admin')
+            ? { organization_id: organizationId }
+            : {}),
           roles: this.formRoles,
           is_active: this.formIsActive,
           must_change_password: this.formMustChangePassword,

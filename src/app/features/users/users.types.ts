@@ -34,7 +34,7 @@ export interface CreateUserDto {
 
 export interface UpdateUserDto {
   display_name: string;
-  organization_id: string | null;
+  organization_id?: string | null;
   roles: AppRole[];
   is_active: boolean;
   must_change_password: boolean;

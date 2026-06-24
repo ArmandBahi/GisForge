@@ -19,7 +19,7 @@ Boilerplate Angular pour la génération rapide d'applications métier avec Curs
 ```bash
 # Backend local
 npx supabase start
-npx supabase db reset   # migrations + seed (organisation démo)
+npx supabase db reset   # migrations + seed (org default + admin)
 
 # Types TypeScript depuis la DB locale
 npm run gen:types
@@ -28,32 +28,19 @@ npm run gen:types
 npm start               # http://localhost:4200
 ```
 
-## Compte de test local
+## Compte admin local
 
-Après `db reset`, créer un utilisateur via l’API Auth (Studio ou curl) :
+Après `db reset`, un super-admin est créé automatiquement :
 
-```bash
-curl -X POST 'http://127.0.0.1:54321/auth/v1/signup' \
-  -H "apikey: <SUPABASE_ANON_KEY>" \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@demo.local","password":"DemoPass123!","data":{"display_name":"Admin Demo"}}'
-```
-
-La clé anon locale est dans `npx supabase status` ou `environment.development.ts`.
-
-Le trigger `handle_new_user` crée le profil dans `administration.user` avec le rôle `user` par défaut.
-
-Pour un accès admin plateforme, assigner `super_admin` dans Supabase Studio (table `administration.user_role`) ou via SQL :
-
-```sql
-INSERT INTO administration.user_role (uid, role_id)
-SELECT u.uid, r.id
-FROM administration.user u, administration.role r
-WHERE u.email = 'admin@demo.local' AND r.name = 'super_admin'
-ON CONFLICT DO NOTHING;
-```
+| Champ | Valeur |
+|-------|--------|
+| Email | `admin@default.local` |
+| Mot de passe | `123456` |
+| Organisation | `default` |
 
 Connexion : [http://localhost:4200/login](http://localhost:4200/login)
+
+L'inscription publique est désactivée (`enable_signup = false`). Les admins créent les comptes via `/users` (RPC `create_user`).
 
 ## Scripts utiles
 
@@ -74,17 +61,25 @@ Les valeurs de dev Angular sont dans `src/environments/environment.development.t
 - `AuthService` (`core/auth/`) : session, profil, rôles (`super_admin`, `organization_admin`, `user`)
 - Guards : `authGuard`, `guestGuard`, `roleGuard`
 - Routes protégées : layout + dashboard nécessitent une session active
+- Inscription publique désactivée (login uniquement)
+
+## Gestion des organisations
+
+- Route `/organizations` (lazy) protégée par `roleGuard(['super_admin'])` — CRUD toutes les orgs
+- Route `/my-organization` — lecture de l'organisation courante (tous les utilisateurs authentifiés)
+- Sidebar : « Organisations » (super_admin), « Mon organisation » (tous)
 
 ## Gestion des utilisateurs
 
 - Route `/users` (lazy) protégée par `roleGuard(['super_admin', 'organization_admin'])`
-- `UsersService` + `users.page.ts` : liste, création (via `auth.signUp` + trigger), édition profil/rôles
+- `UsersService` + `users.page.ts` : liste scoped à l'org, création via RPC `create_user`, édition profil/rôles
+- Seul `super_admin` peut changer l'organisation d'un utilisateur
 - Sidebar : lien « Utilisateurs » visible pour `super_admin` et `organization_admin`
 
 ## Gestion des groupes
 
 - Route `/groups` (lazy) protégée par `roleGuard(['super_admin', 'organization_admin'])`
-- `GroupsService` + `groups.page.ts` : liste, création, édition, suppression, affectation des membres (`user_groups`)
+- `GroupsService` + `groups.page.ts` : liste scoped à l'org, CRUD, affectation des membres
 - Sidebar : lien « Groupes » visible pour `super_admin` et `organization_admin`
 
 ## Structure
